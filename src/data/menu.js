@@ -1,0 +1,217 @@
+export const CATEGORIES = [
+  { id: 'entradas', name: 'Entradas', icon: 'restaurant-outline' },
+  { id: 'sopas', name: 'Sopas', icon: 'cafe-outline' },
+  { id: 'platillos', name: 'Platillos Fuertes', icon: 'flame-outline' },
+  { id: 'arroz', name: 'Arroz', icon: 'nutrition-outline' },
+  { id: 'mariscos', name: 'Mariscos', icon: 'fish-outline' },
+  { id: 'bebidas', name: 'Bebidas', icon: 'beer-outline' },
+  { id: 'postres', name: 'Postres', icon: 'ice-cream-outline' },
+];
+
+export const MENU_ITEMS = [
+  // Entradas
+  {
+    id: 1,
+    name: 'Rollitos Primavera',
+    description: 'Crujientes rollitos rellenos de vegetales frescos con salsa agridulce',
+    price: 85,
+    category: 'entradas',
+    popular: true,
+  },
+  {
+    id: 2,
+    name: 'Wonton Frito',
+    description: 'Masa crujiente rellena de carne de cerdo y camarones',
+    price: 95,
+    category: 'entradas',
+    popular: false,
+  },
+  {
+    id: 3,
+    name: 'Costillas BBQ',
+    description: 'Costillas de cerdo glaseadas con salsa BBQ estilo cantonés',
+    price: 130,
+    category: 'entradas',
+    popular: true,
+  },
+  {
+    id: 4,
+    name: 'Edamames',
+    description: 'Vainas de soya al vapor con sal de mar',
+    price: 65,
+    category: 'entradas',
+    popular: false,
+  },
+
+  // Sopas
+  {
+    id: 5,
+    name: 'Sopa Wonton',
+    description: 'Caldo claro con dumplings de cerdo y camarón',
+    price: 75,
+    category: 'sopas',
+    popular: true,
+  },
+  {
+    id: 6,
+    name: 'Sopa Agripicante',
+    description: 'Sopa tradicional con tofu, hongos y huevo',
+    price: 80,
+    category: 'sopas',
+    popular: false,
+  },
+  {
+    id: 7,
+    name: 'Sopa de Maíz',
+    description: 'Crema de maíz dulce con tiras de pollo',
+    price: 70,
+    category: 'sopas',
+    popular: false,
+  },
+
+  // Platillos Fuertes
+  {
+    id: 8,
+    name: 'Pollo Kung Pao',
+    description: 'Pollo salteado con cacahuates, chiles secos y vegetales',
+    price: 155,
+    category: 'platillos',
+    popular: true,
+  },
+  {
+    id: 9,
+    name: 'Cerdo Agridulce',
+    description: 'Trozos de cerdo empanizado en salsa agridulce con piña',
+    price: 145,
+    category: 'platillos',
+    popular: true,
+  },
+  {
+    id: 10,
+    name: 'Res con Brócoli',
+    description: 'Tiras de res salteadas con brócoli fresco en salsa de ostión',
+    price: 165,
+    category: 'platillos',
+    popular: false,
+  },
+  {
+    id: 11,
+    name: 'Pato Pekín',
+    description: 'Pato rostizado con tortillas, cebollín y salsa hoisin',
+    price: 280,
+    category: 'platillos',
+    popular: true,
+  },
+  {
+    id: 12,
+    name: 'Pollo con Almendras',
+    description: 'Pollo en cubos con almendras tostadas y vegetales',
+    price: 140,
+    category: 'platillos',
+    popular: false,
+  },
+
+  // Arroz
+  {
+    id: 13,
+    name: 'Arroz Frito Especial',
+    description: 'Arroz salteado con camarón, pollo, cerdo, huevo y vegetales',
+    price: 125,
+    category: 'arroz',
+    popular: true,
+  },
+  {
+    id: 14,
+    name: 'Arroz Frito con Pollo',
+    description: 'Arroz salteado con pollo, huevo y verduras',
+    price: 105,
+    category: 'arroz',
+    popular: false,
+  },
+  {
+    id: 15,
+    name: 'Arroz Frito con Camarón',
+    description: 'Arroz salteado con camarones frescos y vegetales',
+    price: 135,
+    category: 'arroz',
+    popular: false,
+  },
+
+  // Mariscos
+  {
+    id: 16,
+    name: 'Camarones al Ajo',
+    description: 'Camarones salteados con abundante ajo y mantequilla',
+    price: 195,
+    category: 'mariscos',
+    popular: true,
+  },
+  {
+    id: 17,
+    name: 'Pescado Frito Estilo Cantón',
+    description: 'Filete de pescado crujiente con salsa agridulce y vegetales',
+    price: 185,
+    category: 'mariscos',
+    popular: false,
+  },
+  {
+    id: 18,
+    name: 'Camarones con Salsa de Langosta',
+    description: 'Camarones en salsa cremosa de langosta con cebollín',
+    price: 220,
+    category: 'mariscos',
+    popular: true,
+  },
+
+  // Bebidas
+  {
+    id: 19,
+    name: 'Té de Jazmín',
+    description: 'Té verde perfumado con flores de jazmín',
+    price: 35,
+    category: 'bebidas',
+    popular: true,
+  },
+  {
+    id: 20,
+    name: 'Limonada de Lychee',
+    description: 'Limonada refrescante con lychee natural',
+    price: 55,
+    category: 'bebidas',
+    popular: false,
+  },
+  {
+    id: 21,
+    name: 'Agua de Horchata',
+    description: 'Bebida tradicional de arroz con canela',
+    price: 40,
+    category: 'bebidas',
+    popular: false,
+  },
+
+  // Postres
+  {
+    id: 22,
+    name: 'Helado Frito',
+    description: 'Bola de helado de vainilla empanizada y frita con miel',
+    price: 75,
+    category: 'postres',
+    popular: true,
+  },
+  {
+    id: 23,
+    name: 'Plátano Caramelizado',
+    description: 'Plátano frito con caramelo y ajonjolí',
+    price: 65,
+    category: 'postres',
+    popular: false,
+  },
+  {
+    id: 24,
+    name: 'Galletas de la Fortuna',
+    description: 'Galletas crujientes con mensaje de la suerte',
+    price: 25,
+    category: 'postres',
+    popular: false,
+  },
+];
