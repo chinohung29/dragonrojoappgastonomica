@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/colors';
 import { CATEGORIES, MENU_ITEMS } from '../data/menu';
 import Header from '../components/Header';
@@ -43,10 +44,13 @@ export default function MenuScreen() {
               onSelectCategory={setSelectedCategory}
             />
             <View style={styles.menuHeader}>
-              <Text style={styles.menuTitle}>{categoryName}</Text>
-              <Text style={styles.menuCount}>
-                {filteredItems.length} platillos
-              </Text>
+              <View style={styles.menuTitleRow}>
+                <View style={styles.titleDot} />
+                <Text style={styles.menuTitle}>{categoryName}</Text>
+              </View>
+              <View style={styles.countBadge}>
+                <Text style={styles.menuCount}>{filteredItems.length}</Text>
+              </View>
             </View>
           </View>
         }
@@ -63,23 +67,43 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   listContent: {
-    paddingBottom: 30,
+    paddingBottom: 40,
   },
   menuHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingTop: 24,
+    paddingBottom: 14,
+  },
+  menuTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
   },
   menuTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: COLORS.text,
   },
+  countBadge: {
+    backgroundColor: COLORS.categoryBg,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
   menuCount: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
 });

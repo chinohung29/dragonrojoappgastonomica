@@ -12,14 +12,13 @@ export default function MenuItem({ item }) {
         </Text>
       </View>
       <View style={styles.info}>
-        <View style={styles.nameRow}>
+        <View style={styles.topRow}>
           <Text style={styles.name} numberOfLines={1}>
             {item.name}
           </Text>
           {item.popular && (
             <View style={styles.popularBadge}>
-              <Ionicons name="star" size={10} color={COLORS.accent} />
-              <Text style={styles.popularText}>Popular</Text>
+              <Ionicons name="star" size={10} color="#FFF" />
             </View>
           )}
         </View>
@@ -27,7 +26,13 @@ export default function MenuItem({ item }) {
           {item.description}
         </Text>
         <View style={styles.priceRow}>
-          <Text style={styles.price}>${item.price} MXN</Text>
+          <View>
+            <Text style={styles.price}>${item.price}</Text>
+            <Text style={styles.currency}>MXN</Text>
+          </View>
+          <TouchableOpacity style={styles.addButton} activeOpacity={0.7}>
+            <Ionicons name="add" size={18} color={COLORS.textLight} />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -51,35 +56,35 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
+    borderRadius: 20,
     marginHorizontal: 20,
-    marginBottom: 12,
-    padding: 12,
+    marginBottom: 14,
+    padding: 14,
     shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
     elevation: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderSubtle,
   },
   imagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    backgroundColor: COLORS.categoryBg,
+    width: 85,
+    height: 85,
+    borderRadius: 16,
+    backgroundColor: COLORS.cardHighlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderEmoji: {
-    fontSize: 36,
+    fontSize: 40,
   },
   info: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
     justifyContent: 'space-between',
   },
-  nameRow: {
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -91,34 +96,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   popularBadge: {
-    flexDirection: 'row',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.accent,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: COLORS.primaryDark,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  popularText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: COLORS.accent,
   },
   description: {
     fontSize: 12,
     color: COLORS.textSecondary,
-    lineHeight: 16,
+    lineHeight: 17,
     marginTop: 4,
   },
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4,
+    alignItems: 'flex-end',
+    marginTop: 6,
   },
   price: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
     color: COLORS.primary,
+  },
+  currency: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: -2,
+  },
+  addButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

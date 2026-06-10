@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dragón Rojo — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #DC2626;
+      --primary-dark: #991B1B;
+      --primary-light: #F87171;
+      --accent: #CA8A04;
+      --accent-light: #FDE68A;
+      --bg: #FEF2F2;
+      --surface: #FFFFFF;
+      --surface-warm: #FFF7ED;
+      --text: #450A0A;
+      --text-secondary: #78716C;
+      --text-light: #FFFFFF;
+      --border: #FECACA;
+      --border-subtle: #FEE2E2;
+      --card-highlight: #FFFBEB;
+      --success: #16A34A;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+    .phone-frame {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 0 2px #333, inset 0 0 0 1px rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 34px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      z-index: 100;
+    }
+    .phone-notch::after {
+      content: '';
+      position: absolute;
+      top: 10px;
+      right: 22px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #1a1a2e;
+      border: 2px solid #333;
+    }
+    .screen {
+      height: 100%;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 56px 20px 14px;
+      border-radius: 0 0 24px 24px;
+      box-shadow: 0 6px 20px rgba(220,38,38,0.3);
+      position: relative;
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .logo-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent-light);
+      letter-spacing: 3px;
+    }
+    .logo-subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 1.5px;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+    .search-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .search-btn:hover { transform: scale(1.1); }
+    .search-btn svg { width: 20px; height: 20px; stroke: var(--primary-dark); }
+    .promo-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 8px 0;
+      background: rgba(0,0,0,0.15);
+      border-radius: 12px;
+      color: var(--accent-light);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* POPULAR SECTION */
+    .section { padding-top: 24px; }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      margin-bottom: 16px;
+    }
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .fire-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .see-all {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .popular-scroll {
+      display: flex;
+      gap: 14px;
+      padding: 0 16px 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .popular-scroll::-webkit-scrollbar { display: none; }
+    .popular-card {
+      min-width: 170px;
+      background: var(--surface);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .popular-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .popular-img {
+      width: 100%;
+      height: 110px;
+      background: var(--card-highlight);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      position: relative;
+    }
+    .top-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--accent);
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #FFF;
+    }
+    .popular-info {
+      padding: 12px;
+    }
+    .popular-category {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .popular-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .popular-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .popular-price {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .add-btn-sm {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: none;
+      color: #FFF;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+    }
+    .add-btn-sm:hover { transform: scale(1.15); }
+
+    /* CATEGORIES */
+    .cat-scroll {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .cat-scroll::-webkit-scrollbar { display: none; }
+    .chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1.5px solid var(--border-subtle);
+      min-width: 80px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .chip:hover { border-color: var(--primary-light); }
+    .chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(220,38,38,0.25);
+    }
+    .chip-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: background 0.2s;
+    }
+    .chip.active .chip-icon { background: rgba(255,255,255,0.2); }
+    .chip-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+    .chip.active .chip-text { color: var(--text-light); }
+
+    /* MENU HEADER */
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 20px 14px;
+    }
+    .menu-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .title-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    .menu-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .count-badge {
+      background: var(--bg);
+      padding: 4px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* MENU ITEMS */
+    .menu-card {
+      display: flex;
+      background: var(--surface);
+      border-radius: 20px;
+      margin: 0 20px 14px;
+      padding: 14px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .menu-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+    .menu-img {
+      width: 85px;
+      height: 85px;
+      border-radius: 16px;
+      background: var(--card-highlight);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+    .menu-info {
+      flex: 1;
+      margin-left: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .menu-top-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .menu-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .star-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .star-badge svg { width: 12px; height: 12px; fill: #FFF; }
+    .menu-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 17px;
+      margin-top: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .menu-price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 6px;
+    }
+    .menu-price {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .menu-currency {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: -2px;
+    }
+    .add-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: var(--primary);
+      border: none;
+      color: #FFF;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .add-btn:hover { transform: scale(1.1); background: var(--primary-dark); }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 12px 0 28px;
+      background: var(--surface);
+      border-top: 1px solid var(--border-subtle);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .nav-item.active { opacity: 1; }
+    .nav-item:hover { opacity: 0.8; }
+    .nav-icon { font-size: 22px; }
+    .nav-label { font-size: 10px; font-weight: 600; color: var(--text); }
+    .nav-item.active .nav-label { color: var(--primary); }
+    .nav-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 430px) {
+      body { padding: 0; }
+      .phone-frame {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .phone-notch { display: none; }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .menu-card { animation: fadeInUp 0.4s ease both; }
+    .menu-card:nth-child(1) { animation-delay: 0.05s; }
+    .menu-card:nth-child(2) { animation-delay: 0.1s; }
+    .menu-card:nth-child(3) { animation-delay: 0.15s; }
+    .menu-card:nth-child(4) { animation-delay: 0.2s; }
+    .menu-card:nth-child(5) { animation-delay: 0.25s; }
+    .menu-card:nth-child(6) { animation-delay: 0.3s; }
+    .popular-card { animation: fadeInUp 0.4s ease both; }
+    .popular-card:nth-child(1) { animation-delay: 0.05s; }
+    .popular-card:nth-child(2) { animation-delay: 0.1s; }
+    .popular-card:nth-child(3) { animation-delay: 0.15s; }
+    .popular-card:nth-child(4) { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="screen">
+
+      <!-- HEADER -->
+      <div class="header">
+        <div class="header-content">
+          <div class="logo-row">
+            <div class="logo-circle">🐉</div>
+            <div>
+              <div class="logo-title">DRAGÓN ROJO</div>
+              <div class="logo-subtitle">Gastronomía Oriental</div>
+            </div>
+          </div>
+          <button class="search-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="promo-bar">
+          🚲 Envío gratis en pedidos +$200 ›
+        </div>
+      </div>
+
+      <!-- POPULAR -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="fire-icon">🔥</div>
+            <div class="section-title">Más Populares</div>
+          </div>
+          <a class="see-all">Ver todo</a>
+        </div>
+        <div class="popular-scroll">
+          <div class="popular-card">
+            <div class="popular-img">
+              🥟
+              <div class="top-badge">🏆 #1</div>
+            </div>
+            <div class="popular-info">
+              <div class="popular-category">Entrada</div>
+              <div class="popular-name">Rollitos Primavera</div>
+              <div class="popular-bottom">
+                <span class="popular-price">$85</span>
+                <button class="add-btn-sm">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="popular-card">
+            <div class="popular-img">🥟</div>
+            <div class="popular-info">
+              <div class="popular-category">Entrada</div>
+              <div class="popular-name">Costillas BBQ</div>
+              <div class="popular-bottom">
+                <span class="popular-price">$130</span>
+                <button class="add-btn-sm">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="popular-card">
+            <div class="popular-img">🍜</div>
+            <div class="popular-info">
+              <div class="popular-category">Sopa</div>
+              <div class="popular-name">Sopa Wonton</div>
+              <div class="popular-bottom">
+                <span class="popular-price">$75</span>
+                <button class="add-btn-sm">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="popular-card">
+            <div class="popular-img">🍗</div>
+            <div class="popular-info">
+              <div class="popular-category">Fuerte</div>
+              <div class="popular-name">Pollo Kung Pao</div>
+              <div class="popular-bottom">
+                <span class="popular-price">$155</span>
+                <button class="add-btn-sm">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Categorías</div>
+        </div>
+        <div class="cat-scroll">
+          <div class="chip active">
+            <div class="chip-icon">📋</div>
+            <span class="chip-text">Todos</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🥟</div>
+            <span class="chip-text">Entradas</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🍜</div>
+            <span class="chip-text">Sopas</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🍗</div>
+            <span class="chip-text">Fuertes</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🍚</div>
+            <span class="chip-text">Arroz</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🦐</div>
+            <span class="chip-text">Mariscos</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🍵</div>
+            <span class="chip-text">Bebidas</span>
+          </div>
+          <div class="chip">
+            <div class="chip-icon">🍨</div>
+            <span class="chip-text">Postres</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU HEADER -->
+      <div class="menu-header">
+        <div class="menu-title-row">
+          <div class="title-dot"></div>
+          <div class="menu-title">Todos los Platillos</div>
+        </div>
+        <div class="count-badge">24</div>
+      </div>
+
+      <!-- MENU ITEMS -->
+      <div class="menu-card">
+        <div class="menu-img">🥟</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Rollitos Primavera</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Crujientes rollitos rellenos de vegetales frescos con salsa agridulce</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$85</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🥟</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Wonton Frito</div>
+          </div>
+          <div class="menu-desc">Masa crujiente rellena de carne de cerdo y camarones</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$95</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🥟</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Costillas BBQ</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Costillas de cerdo glaseadas con salsa BBQ estilo cantonés</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$130</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🥟</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Edamames</div>
+          </div>
+          <div class="menu-desc">Vainas de soya al vapor con sal de mar</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$65</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍜</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Sopa Wonton</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Caldo claro con dumplings de cerdo y camarón</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$75</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍜</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Sopa Agripicante</div>
+          </div>
+          <div class="menu-desc">Sopa tradicional con tofu, hongos y huevo</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$80</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍗</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Pollo Kung Pao</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Pollo salteado con cacahuates, chiles secos y vegetales</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$155</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍗</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Cerdo Agridulce</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Trozos de cerdo empanizado en salsa agridulce con piña</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$145</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍗</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Pato Pekín</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Pato rostizado con tortillas, cebollín y salsa hoisin</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$280</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🦐</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Camarones al Ajo</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Camarones salteados con abundante ajo y mantequilla</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$195</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍵</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Té de Jazmín</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Té verde perfumado con flores de jazmín</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$35</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img">🍨</div>
+        <div class="menu-info">
+          <div class="menu-top-row">
+            <div class="menu-name">Helado Frito</div>
+            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          </div>
+          <div class="menu-desc">Bola de helado de vainilla empanizada y frita con miel</div>
+          <div class="menu-price-row">
+            <div>
+              <div class="menu-price">$75</div>
+              <div class="menu-currency">MXN</div>
+            </div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 20px;"></div>
+
+      <!-- BOTTOM NAV -->
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label" style="color: var(--primary);">Inicio</span>
+          <div class="nav-dot"></div>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Menú</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">🛒</span>
+          <span class="nav-label">Carrito</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">Perfil</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
