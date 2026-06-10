@@ -1,16 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/colors';
 
 export default function MenuItem({ item }) {
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.7}>
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.placeholderEmoji}>
-          {getEmojiForCategory(item.category)}
-        </Text>
-      </View>
+      <Image source={{ uri: item.image }} style={styles.image} />
       <View style={styles.info}>
         <View style={styles.topRow}>
           <Text style={styles.name} numberOfLines={1}>
@@ -39,19 +35,6 @@ export default function MenuItem({ item }) {
   );
 }
 
-function getEmojiForCategory(category) {
-  const emojis = {
-    entradas: '🥟',
-    sopas: '🍜',
-    platillos: '🍗',
-    arroz: '🍚',
-    mariscos: '🦐',
-    bebidas: '🍵',
-    postres: '🍨',
-  };
-  return emojis[category] || '🍽️';
-}
-
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
@@ -68,16 +51,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.borderSubtle,
   },
-  imagePlaceholder: {
-    width: 85,
-    height: 85,
+  image: {
+    width: 90,
+    height: 90,
     borderRadius: 16,
     backgroundColor: COLORS.cardHighlight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderEmoji: {
-    fontSize: 40,
   },
   info: {
     flex: 1,

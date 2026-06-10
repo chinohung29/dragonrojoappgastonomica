@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants/colors';
@@ -25,19 +25,20 @@ export default function PopularSection({ items }) {
       >
         {items.map((item, index) => (
           <TouchableOpacity key={item.id} style={styles.card} activeOpacity={0.8}>
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.emoji}>{getEmojiForCategory(item.category)}</Text>
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: item.image }} style={styles.image} />
               {index === 0 && (
                 <View style={styles.topBadge}>
                   <Ionicons name="trophy" size={10} color="#FFF" />
                   <Text style={styles.topText}>#1</Text>
                 </View>
               )}
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.4)']}
+                style={styles.imageOverlay}
+              />
             </View>
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.03)']}
-              style={styles.cardInfo}
-            >
+            <View style={styles.cardInfo}>
               <Text style={styles.cardCategory}>
                 {getCategoryLabel(item.category)}
               </Text>
@@ -48,25 +49,12 @@ export default function PopularSection({ items }) {
                   <Ionicons name="add" size={16} color={COLORS.textLight} />
                 </View>
               </View>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
   );
-}
-
-function getEmojiForCategory(category) {
-  const emojis = {
-    entradas: '🥟',
-    sopas: '🍜',
-    platillos: '🍗',
-    arroz: '🍚',
-    mariscos: '🦐',
-    bebidas: '🍵',
-    postres: '🍨',
-  };
-  return emojis[category] || '🍽️';
 }
 
 function getCategoryLabel(category) {
@@ -131,15 +119,22 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
-  imagePlaceholder: {
+  imageContainer: {
     width: '100%',
-    height: 110,
-    backgroundColor: COLORS.cardHighlight,
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: 120,
+    position: 'relative',
   },
-  emoji: {
-    fontSize: 50,
+  image: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: COLORS.cardHighlight,
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 40,
   },
   topBadge: {
     position: 'absolute',

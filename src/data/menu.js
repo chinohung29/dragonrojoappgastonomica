@@ -1,15 +1,14 @@
 export const CATEGORIES = [
-  { id: 'entradas', name: 'Entradas', icon: 'restaurant-outline' },
-  { id: 'sopas', name: 'Sopas', icon: 'cafe-outline' },
-  { id: 'platillos', name: 'Platillos Fuertes', icon: 'flame-outline' },
-  { id: 'arroz', name: 'Arroz', icon: 'nutrition-outline' },
-  { id: 'mariscos', name: 'Mariscos', icon: 'fish-outline' },
-  { id: 'bebidas', name: 'Bebidas', icon: 'beer-outline' },
-  { id: 'postres', name: 'Postres', icon: 'ice-cream-outline' },
+  { id: 'entradas', name: 'Entradas', icon: 'restaurant-outline', emoji: '🥟' },
+  { id: 'sopas', name: 'Sopas', icon: 'cafe-outline', emoji: '🍜' },
+  { id: 'platillos', name: 'Platillos Fuertes', icon: 'flame-outline', emoji: '🍗' },
+  { id: 'arroz', name: 'Arroz', icon: 'nutrition-outline', emoji: '🍚' },
+  { id: 'mariscos', name: 'Mariscos', icon: 'fish-outline', emoji: '🦐' },
+  { id: 'bebidas', name: 'Bebidas', icon: 'beer-outline', emoji: '🍵' },
+  { id: 'postres', name: 'Postres', icon: 'ice-cream-outline', emoji: '🍨' },
 ];
 
 export const MENU_ITEMS = [
-  // Entradas
   {
     id: 1,
     name: 'Rollitos Primavera',
@@ -17,6 +16,7 @@ export const MENU_ITEMS = [
     price: 85,
     category: 'entradas',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1677678071288-ff34afd5765f?w=400&h=300&fit=crop',
   },
   {
     id: 2,
@@ -25,6 +25,7 @@ export const MENU_ITEMS = [
     price: 95,
     category: 'entradas',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400&h=300&fit=crop',
   },
   {
     id: 3,
@@ -33,6 +34,7 @@ export const MENU_ITEMS = [
     price: 130,
     category: 'entradas',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop',
   },
   {
     id: 4,
@@ -41,9 +43,8 @@ export const MENU_ITEMS = [
     price: 65,
     category: 'entradas',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1564894809611-1742fc40ed80?w=400&h=300&fit=crop',
   },
-
-  // Sopas
   {
     id: 5,
     name: 'Sopa Wonton',
@@ -51,6 +52,7 @@ export const MENU_ITEMS = [
     price: 75,
     category: 'sopas',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&h=300&fit=crop',
   },
   {
     id: 6,
@@ -59,6 +61,7 @@ export const MENU_ITEMS = [
     price: 80,
     category: 'sopas',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop',
   },
   {
     id: 7,
@@ -67,9 +70,8 @@ export const MENU_ITEMS = [
     price: 70,
     category: 'sopas',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=400&h=300&fit=crop',
   },
-
-  // Platillos Fuertes
   {
     id: 8,
     name: 'Pollo Kung Pao',
@@ -77,6 +79,7 @@ export const MENU_ITEMS = [
     price: 155,
     category: 'platillos',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&h=300&fit=crop',
   },
   {
     id: 9,
@@ -85,6 +88,7 @@ export const MENU_ITEMS = [
     price: 145,
     category: 'platillos',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=300&fit=crop',
   },
   {
     id: 10,
@@ -93,6 +97,7 @@ export const MENU_ITEMS = [
     price: 165,
     category: 'platillos',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop',
   },
   {
     id: 11,
@@ -101,6 +106,7 @@ export const MENU_ITEMS = [
     price: 280,
     category: 'platillos',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400&h=300&fit=crop',
   },
   {
     id: 12,
@@ -109,9 +115,8 @@ export const MENU_ITEMS = [
     price: 140,
     category: 'platillos',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=300&fit=crop',
   },
-
-  // Arroz
   {
     id: 13,
     name: 'Arroz Frito Especial',
@@ -119,6 +124,7 @@ export const MENU_ITEMS = [
     price: 125,
     category: 'arroz',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop',
   },
   {
     id: 14,
@@ -127,6 +133,7 @@ export const MENU_ITEMS = [
     price: 105,
     category: 'arroz',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop',
   },
   {
     id: 15,
@@ -135,9 +142,8 @@ export const MENU_ITEMS = [
     price: 135,
     category: 'arroz',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&h=300&fit=crop',
   },
-
-  // Mariscos
   {
     id: 16,
     name: 'Camarones al Ajo',
@@ -145,6 +151,7 @@ export const MENU_ITEMS = [
     price: 195,
     category: 'mariscos',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=300&fit=crop',
   },
   {
     id: 17,
@@ -153,6 +160,7 @@ export const MENU_ITEMS = [
     price: 185,
     category: 'mariscos',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=400&h=300&fit=crop',
   },
   {
     id: 18,
@@ -161,9 +169,8 @@ export const MENU_ITEMS = [
     price: 220,
     category: 'mariscos',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1625943553852-781c6dd46faa?w=400&h=300&fit=crop',
   },
-
-  // Bebidas
   {
     id: 19,
     name: 'Té de Jazmín',
@@ -171,6 +178,7 @@ export const MENU_ITEMS = [
     price: 35,
     category: 'bebidas',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop',
   },
   {
     id: 20,
@@ -179,6 +187,7 @@ export const MENU_ITEMS = [
     price: 55,
     category: 'bebidas',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed514?w=400&h=300&fit=crop',
   },
   {
     id: 21,
@@ -187,9 +196,8 @@ export const MENU_ITEMS = [
     price: 40,
     category: 'bebidas',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=400&h=300&fit=crop',
   },
-
-  // Postres
   {
     id: 22,
     name: 'Helado Frito',
@@ -197,6 +205,7 @@ export const MENU_ITEMS = [
     price: 75,
     category: 'postres',
     popular: true,
+    image: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=400&h=300&fit=crop',
   },
   {
     id: 23,
@@ -205,6 +214,7 @@ export const MENU_ITEMS = [
     price: 65,
     category: 'postres',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop',
   },
   {
     id: 24,
@@ -213,5 +223,6 @@ export const MENU_ITEMS = [
     price: 25,
     category: 'postres',
     popular: false,
+    image: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=300&fit=crop',
   },
 ];

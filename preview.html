@@ -5,595 +5,241 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dragón Rojo — Preview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --primary: #DC2626;
-      --primary-dark: #991B1B;
-      --primary-light: #F87171;
-      --accent: #CA8A04;
-      --accent-light: #FDE68A;
-      --bg: #FEF2F2;
-      --surface: #FFFFFF;
-      --surface-warm: #FFF7ED;
-      --text: #450A0A;
-      --text-secondary: #78716C;
-      --text-light: #FFFFFF;
-      --border: #FECACA;
-      --border-subtle: #FEE2E2;
-      --card-highlight: #FFFBEB;
-      --success: #16A34A;
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --primary:#DC2626;--primary-dark:#991B1B;--primary-light:#F87171;
+      --accent:#CA8A04;--accent-light:#FDE68A;
+      --bg:#FEF2F2;--surface:#FFFFFF;--surface-warm:#FFF7ED;
+      --text:#450A0A;--text-sec:#78716C;--text-light:#FFFFFF;
+      --border:#FECACA;--border-s:#FEE2E2;
+      --card-hl:#FFFBEB;--success:#16A34A;
     }
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: #1a1a1a;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 30px 20px;
-    }
-    .phone-frame {
-      width: 390px;
-      height: 844px;
-      background: var(--bg);
-      border-radius: 40px;
-      overflow: hidden;
-      box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 0 2px #333, inset 0 0 0 1px rgba(255,255,255,0.1);
-      position: relative;
-    }
-    .phone-notch {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 160px;
-      height: 34px;
-      background: #000;
-      border-radius: 0 0 20px 20px;
-      z-index: 100;
-    }
-    .phone-notch::after {
-      content: '';
-      position: absolute;
-      top: 10px;
-      right: 22px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #1a1a2e;
-      border: 2px solid #333;
-    }
-    .screen {
-      height: 100%;
-      overflow-y: auto;
-      scrollbar-width: none;
-    }
-    .screen::-webkit-scrollbar { display: none; }
+    body{font-family:'Inter',-apple-system,sans-serif;background:#111;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:30px 20px}
+    .phone{width:393px;height:852px;background:var(--bg);border-radius:44px;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 3px #222,inset 0 0 0 1px rgba(255,255,255,.08);position:relative}
+    .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:126px;height:34px;background:#000;border-radius:0 0 18px 18px;z-index:100}
+    .notch::before{content:'';position:absolute;width:10px;height:10px;border-radius:50%;background:#1a1a2e;border:2px solid #333;top:10px;right:16px}
+    .screen{height:100%;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .screen::-webkit-scrollbar{display:none}
 
-    /* HEADER */
-    .header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      padding: 56px 20px 14px;
-      border-radius: 0 0 24px 24px;
-      box-shadow: 0 6px 20px rgba(220,38,38,0.3);
-      position: relative;
-    }
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .logo-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-    }
-    .logo-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--accent-light);
-      letter-spacing: 3px;
-    }
-    .logo-subtitle {
-      font-size: 11px;
-      color: rgba(255,255,255,0.8);
-      letter-spacing: 1.5px;
-      margin-top: 2px;
-      text-transform: uppercase;
-    }
-    .search-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--accent-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .search-btn:hover { transform: scale(1.1); }
-    .search-btn svg { width: 20px; height: 20px; stroke: var(--primary-dark); }
-    .promo-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 14px;
-      padding: 8px 0;
-      background: rgba(0,0,0,0.15);
-      border-radius: 12px;
-      color: var(--accent-light);
-      font-size: 12px;
-      font-weight: 600;
-    }
+    /* Header */
+    .header{background:linear-gradient(145deg,var(--primary),var(--primary-dark));padding:58px 20px 14px;border-radius:0 0 28px 28px;position:relative;overflow:hidden}
+    .header::before{content:'';position:absolute;top:-60px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+    .header::after{content:'';position:absolute;bottom:-30px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)}
+    .h-content{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+    .logo-row{display:flex;align-items:center;gap:14px}
+    .logo-c{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.12);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:30px;border:1px solid rgba(255,255,255,.15)}
+    .logo-t{font-size:22px;font-weight:900;color:var(--accent-light);letter-spacing:3px}
+    .logo-s{font-size:10px;color:rgba(255,255,255,.7);letter-spacing:2px;margin-top:3px;text-transform:uppercase;font-weight:500}
+    .s-btn{width:42px;height:42px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(202,138,4,.3)}
+    .s-btn:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(202,138,4,.4)}
+    .s-btn svg{width:20px;height:20px;stroke:var(--primary-dark);stroke-width:2.5;fill:none}
+    .promo{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;padding:10px;background:rgba(0,0,0,.18);backdrop-filter:blur(6px);border-radius:14px;color:var(--accent-light);font-size:12px;font-weight:600;position:relative;z-index:1;border:1px solid rgba(255,255,255,.06)}
 
-    /* POPULAR SECTION */
-    .section { padding-top: 24px; }
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
-      margin-bottom: 16px;
-    }
-    .section-title-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .fire-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-    .section-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .see-all {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--primary);
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .popular-scroll {
-      display: flex;
-      gap: 14px;
-      padding: 0 16px 4px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .popular-scroll::-webkit-scrollbar { display: none; }
-    .popular-card {
-      min-width: 170px;
-      background: var(--surface);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .popular-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
-    .popular-img {
-      width: 100%;
-      height: 110px;
-      background: var(--card-highlight);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 50px;
-      position: relative;
-    }
-    .top-badge {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      background: var(--accent);
-      padding: 4px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: 800;
-      color: #FFF;
-    }
-    .popular-info {
-      padding: 12px;
-    }
-    .popular-category {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-    .popular-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .popular-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .popular-price {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--accent);
-    }
-    .add-btn-sm {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--primary);
-      border: none;
-      color: #FFF;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s;
-    }
-    .add-btn-sm:hover { transform: scale(1.15); }
+    /* Section */
+    .sec{padding-top:26px}
+    .sec-h{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:16px}
+    .sec-tr{display:flex;align-items:center;gap:10px}
+    .fire{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#ef4444);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 8px rgba(220,38,38,.3)}
+    .sec-t{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+    .see-all{font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;text-decoration:none;padding:6px 12px;border-radius:8px;transition:background .2s}
+    .see-all:hover{background:var(--border-s)}
 
-    /* CATEGORIES */
-    .cat-scroll {
-      display: flex;
-      gap: 10px;
-      padding: 0 16px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .cat-scroll::-webkit-scrollbar { display: none; }
-    .chip {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      background: var(--surface);
-      padding: 12px 16px;
-      border-radius: 16px;
-      border: 1.5px solid var(--border-subtle);
-      min-width: 80px;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    }
-    .chip:hover { border-color: var(--primary-light); }
-    .chip.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      box-shadow: 0 4px 12px rgba(220,38,38,0.25);
-    }
-    .chip-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      transition: background 0.2s;
-    }
-    .chip.active .chip-icon { background: rgba(255,255,255,0.2); }
-    .chip-text {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-      transition: color 0.2s;
-    }
-    .chip.active .chip-text { color: var(--text-light); }
+    /* Popular Cards */
+    .pop-scroll{display:flex;gap:14px;padding:0 20px 6px;overflow-x:auto;scrollbar-width:none}
+    .pop-scroll::-webkit-scrollbar{display:none}
+    .pop-card{min-width:172px;background:var(--surface);border-radius:22px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.07);cursor:pointer;transition:all .3s cubic-bezier(.25,.8,.25,1);border:1px solid rgba(0,0,0,.03)}
+    .pop-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 12px 32px rgba(0,0,0,.12)}
+    .pop-img{width:100%;height:120px;object-fit:cover;display:block;position:relative}
+    .pop-img-wrap{position:relative;overflow:hidden}
+    .pop-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,rgba(0,0,0,.25))}
+    .top-badge{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,var(--accent),#B45309);padding:5px 10px;border-radius:10px;font-size:10px;font-weight:800;color:#FFF;z-index:2;box-shadow:0 2px 8px rgba(202,138,4,.4)}
+    .pop-info{padding:14px}
+    .pop-cat{font-size:10px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px}
+    .pop-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pop-bot{display:flex;justify-content:space-between;align-items:center}
+    .pop-price{font-size:18px;font-weight:800;color:var(--accent)}
+    .add-s{width:30px;height:30px;border-radius:10px;background:var(--primary);border:none;color:#FFF;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;box-shadow:0 2px 6px rgba(220,38,38,.25)}
+    .add-s:hover{transform:scale(1.12);background:var(--primary-dark)}
 
-    /* MENU HEADER */
-    .menu-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 24px 20px 14px;
-    }
-    .menu-title-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .title-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--primary);
-    }
-    .menu-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .count-badge {
-      background: var(--bg);
-      padding: 4px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--primary);
-    }
+    /* Categories */
+    .cat-scroll{display:flex;gap:10px;padding:0 20px;overflow-x:auto;scrollbar-width:none}
+    .cat-scroll::-webkit-scrollbar{display:none}
+    .chip{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--surface);padding:14px 16px;border-radius:18px;border:1.5px solid var(--border-s);min-width:78px;cursor:pointer;transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+    .chip:hover{border-color:var(--primary-light);transform:translateY(-2px)}
+    .chip.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-color:transparent;box-shadow:0 6px 18px rgba(220,38,38,.3);transform:translateY(-2px)}
+    .chip-icon{width:38px;height:38px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .25s}
+    .chip.active .chip-icon{background:rgba(255,255,255,.18)}
+    .chip-text{font-size:11px;font-weight:700;color:var(--text);transition:color .25s;white-space:nowrap}
+    .chip.active .chip-text{color:var(--text-light)}
 
-    /* MENU ITEMS */
-    .menu-card {
-      display: flex;
-      background: var(--surface);
-      border-radius: 20px;
-      margin: 0 20px 14px;
-      padding: 14px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .menu-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    }
-    .menu-img {
-      width: 85px;
-      height: 85px;
-      border-radius: 16px;
-      background: var(--card-highlight);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-      flex-shrink: 0;
-    }
-    .menu-info {
-      flex: 1;
-      margin-left: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .menu-top-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .menu-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .star-badge {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .star-badge svg { width: 12px; height: 12px; fill: #FFF; }
-    .menu-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 17px;
-      margin-top: 4px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .menu-price-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-top: 6px;
-    }
-    .menu-price {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .menu-currency {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-top: -2px;
-    }
-    .add-btn {
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      background: var(--primary);
-      border: none;
-      color: #FFF;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s, background 0.15s;
-    }
-    .add-btn:hover { transform: scale(1.1); background: var(--primary-dark); }
+    /* Menu Section Header */
+    .menu-h{display:flex;justify-content:space-between;align-items:center;padding:26px 20px 16px}
+    .menu-tr{display:flex;align-items:center;gap:10px}
+    .t-dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px rgba(220,38,38,.15)}
+    .menu-t{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+    .c-badge{background:var(--bg);padding:5px 14px;border-radius:12px;border:1.5px solid var(--border);font-size:13px;font-weight:700;color:var(--primary)}
 
-    /* BOTTOM NAV */
-    .bottom-nav {
-      position: sticky;
-      bottom: 0;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 12px 0 28px;
-      background: var(--surface);
-      border-top: 1px solid var(--border-subtle);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      opacity: 0.5;
-      transition: opacity 0.2s;
-    }
-    .nav-item.active { opacity: 1; }
-    .nav-item:hover { opacity: 0.8; }
-    .nav-icon { font-size: 22px; }
-    .nav-label { font-size: 10px; font-weight: 600; color: var(--text); }
-    .nav-item.active .nav-label { color: var(--primary); }
-    .nav-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--primary);
-    }
+    /* Menu Items */
+    .m-card{display:flex;background:var(--surface);border-radius:22px;margin:0 20px 14px;padding:14px;border:1px solid var(--border-s);box-shadow:0 2px 12px rgba(0,0,0,.03);cursor:pointer;transition:all .25s cubic-bezier(.25,.8,.25,1);position:relative;overflow:hidden}
+    .m-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:0;background:var(--primary);border-radius:0 4px 4px 0;transition:height .3s}
+    .m-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.08)}
+    .m-card:hover::before{height:100%}
+    .m-img{width:90px;height:90px;border-radius:16px;object-fit:cover;flex-shrink:0;background:var(--card-hl)}
+    .m-info{flex:1;margin-left:14px;display:flex;flex-direction:column;justify-content:space-between}
+    .m-top{display:flex;align-items:center;gap:8px}
+    .m-name{font-size:16px;font-weight:700;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .star{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#B45309);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(202,138,4,.3)}
+    .star svg{width:12px;height:12px;fill:#FFF}
+    .m-desc{font-size:12px;color:var(--text-sec);line-height:17px;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .m-pr{display:flex;justify-content:space-between;align-items:flex-end;margin-top:8px}
+    .m-price{font-size:20px;font-weight:800;color:var(--primary)}
+    .m-curr{font-size:10px;font-weight:600;color:var(--text-sec);margin-top:-2px}
+    .add-b{width:36px;height:36px;border-radius:12px;background:var(--primary);border:none;color:#FFF;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 3px 10px rgba(220,38,38,.25)}
+    .add-b:hover{transform:scale(1.1);background:var(--primary-dark);box-shadow:0 5px 14px rgba(220,38,38,.35)}
 
-    /* RESPONSIVE */
-    @media (max-width: 430px) {
-      body { padding: 0; }
-      .phone-frame {
-        width: 100%;
-        height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-      }
-      .phone-notch { display: none; }
-    }
+    /* Bottom Nav */
+    .b-nav{position:sticky;bottom:0;display:flex;justify-content:space-around;align-items:center;padding:10px 0 30px;background:var(--surface);border-top:1px solid var(--border-s);box-shadow:0 -4px 24px rgba(0,0,0,.04)}
+    .n-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;opacity:.4;transition:all .2s;padding:4px 12px}
+    .n-item.active{opacity:1}
+    .n-item:hover{opacity:.7}
+    .n-icon{font-size:22px}
+    .n-label{font-size:10px;font-weight:700;color:var(--text)}
+    .n-item.active .n-label{color:var(--primary)}
+    .n-dot{width:5px;height:5px;border-radius:50%;background:var(--primary)}
+
+    /* Responsive */
+    @media(max-width:430px){body{padding:0}.phone{width:100%;height:100vh;border-radius:0;box-shadow:none}.notch{display:none}}
 
     /* Animations */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .menu-card { animation: fadeInUp 0.4s ease both; }
-    .menu-card:nth-child(1) { animation-delay: 0.05s; }
-    .menu-card:nth-child(2) { animation-delay: 0.1s; }
-    .menu-card:nth-child(3) { animation-delay: 0.15s; }
-    .menu-card:nth-child(4) { animation-delay: 0.2s; }
-    .menu-card:nth-child(5) { animation-delay: 0.25s; }
-    .menu-card:nth-child(6) { animation-delay: 0.3s; }
-    .popular-card { animation: fadeInUp 0.4s ease both; }
-    .popular-card:nth-child(1) { animation-delay: 0.05s; }
-    .popular-card:nth-child(2) { animation-delay: 0.1s; }
-    .popular-card:nth-child(3) { animation-delay: 0.15s; }
-    .popular-card:nth-child(4) { animation-delay: 0.2s; }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    .m-card{animation:fadeUp .5s ease both}
+    .m-card:nth-child(1){animation-delay:.05s}.m-card:nth-child(2){animation-delay:.1s}
+    .m-card:nth-child(3){animation-delay:.15s}.m-card:nth-child(4){animation-delay:.2s}
+    .m-card:nth-child(5){animation-delay:.25s}.m-card:nth-child(6){animation-delay:.3s}
+    .m-card:nth-child(7){animation-delay:.35s}.m-card:nth-child(8){animation-delay:.4s}
+    .m-card:nth-child(9){animation-delay:.45s}.m-card:nth-child(10){animation-delay:.5s}
+    .m-card:nth-child(11){animation-delay:.55s}.m-card:nth-child(12){animation-delay:.6s}
+    .pop-card{animation:slideIn .5s ease both}
+    .pop-card:nth-child(1){animation-delay:.1s}.pop-card:nth-child(2){animation-delay:.2s}
+    .pop-card:nth-child(3){animation-delay:.3s}.pop-card:nth-child(4){animation-delay:.4s}
+    .chip{animation:fadeUp .4s ease both}
+    .chip:nth-child(1){animation-delay:.05s}.chip:nth-child(2){animation-delay:.1s}
+    .chip:nth-child(3){animation-delay:.15s}.chip:nth-child(4){animation-delay:.2s}
+    .chip:nth-child(5){animation-delay:.25s}.chip:nth-child(6){animation-delay:.3s}
+    .chip:nth-child(7){animation-delay:.35s}.chip:nth-child(8){animation-delay:.4s}
   </style>
 </head>
 <body>
-  <div class="phone-frame">
-    <div class="phone-notch"></div>
+  <div class="phone">
+    <div class="notch"></div>
     <div class="screen">
 
       <!-- HEADER -->
       <div class="header">
-        <div class="header-content">
+        <div class="h-content">
           <div class="logo-row">
-            <div class="logo-circle">🐉</div>
+            <div class="logo-c">🐉</div>
             <div>
-              <div class="logo-title">DRAGÓN ROJO</div>
-              <div class="logo-subtitle">Gastronomía Oriental</div>
+              <div class="logo-t">DRAGÓN ROJO</div>
+              <div class="logo-s">Gastronomía Oriental</div>
             </div>
           </div>
-          <button class="search-btn">
-            <svg fill="none" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4" stroke-linecap="round"/></svg>
+          <button class="s-btn">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4" stroke-linecap="round"/></svg>
           </button>
         </div>
-        <div class="promo-bar">
-          🚲 Envío gratis en pedidos +$200 ›
-        </div>
+        <div class="promo">🚲 Envío gratis en pedidos mayores a $200 ›</div>
       </div>
 
       <!-- POPULAR -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title-row">
-            <div class="fire-icon">🔥</div>
-            <div class="section-title">Más Populares</div>
+      <div class="sec">
+        <div class="sec-h">
+          <div class="sec-tr">
+            <div class="fire">🔥</div>
+            <div class="sec-t">Más Populares</div>
           </div>
           <a class="see-all">Ver todo</a>
         </div>
-        <div class="popular-scroll">
-          <div class="popular-card">
-            <div class="popular-img">
-              🥟
+        <div class="pop-scroll">
+          <div class="pop-card">
+            <div class="pop-img-wrap">
+              <img class="pop-img" src="https://images.unsplash.com/photo-1677678071288-ff34afd5765f?w=400&h=300&fit=crop" alt="Rollitos Primavera" loading="lazy">
               <div class="top-badge">🏆 #1</div>
             </div>
-            <div class="popular-info">
-              <div class="popular-category">Entrada</div>
-              <div class="popular-name">Rollitos Primavera</div>
-              <div class="popular-bottom">
-                <span class="popular-price">$85</span>
-                <button class="add-btn-sm">+</button>
+            <div class="pop-info">
+              <div class="pop-cat">Entrada</div>
+              <div class="pop-name">Rollitos Primavera</div>
+              <div class="pop-bot">
+                <span class="pop-price">$85</span>
+                <button class="add-s">+</button>
               </div>
             </div>
           </div>
-          <div class="popular-card">
-            <div class="popular-img">🥟</div>
-            <div class="popular-info">
-              <div class="popular-category">Entrada</div>
-              <div class="popular-name">Costillas BBQ</div>
-              <div class="popular-bottom">
-                <span class="popular-price">$130</span>
-                <button class="add-btn-sm">+</button>
+          <div class="pop-card">
+            <div class="pop-img-wrap">
+              <img class="pop-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop" alt="Costillas BBQ" loading="lazy">
+            </div>
+            <div class="pop-info">
+              <div class="pop-cat">Entrada</div>
+              <div class="pop-name">Costillas BBQ</div>
+              <div class="pop-bot">
+                <span class="pop-price">$130</span>
+                <button class="add-s">+</button>
               </div>
             </div>
           </div>
-          <div class="popular-card">
-            <div class="popular-img">🍜</div>
-            <div class="popular-info">
-              <div class="popular-category">Sopa</div>
-              <div class="popular-name">Sopa Wonton</div>
-              <div class="popular-bottom">
-                <span class="popular-price">$75</span>
-                <button class="add-btn-sm">+</button>
+          <div class="pop-card">
+            <div class="pop-img-wrap">
+              <img class="pop-img" src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&h=300&fit=crop" alt="Sopa Wonton" loading="lazy">
+            </div>
+            <div class="pop-info">
+              <div class="pop-cat">Sopa</div>
+              <div class="pop-name">Sopa Wonton</div>
+              <div class="pop-bot">
+                <span class="pop-price">$75</span>
+                <button class="add-s">+</button>
               </div>
             </div>
           </div>
-          <div class="popular-card">
-            <div class="popular-img">🍗</div>
-            <div class="popular-info">
-              <div class="popular-category">Fuerte</div>
-              <div class="popular-name">Pollo Kung Pao</div>
-              <div class="popular-bottom">
-                <span class="popular-price">$155</span>
-                <button class="add-btn-sm">+</button>
+          <div class="pop-card">
+            <div class="pop-img-wrap">
+              <img class="pop-img" src="https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&h=300&fit=crop" alt="Pollo Kung Pao" loading="lazy">
+            </div>
+            <div class="pop-info">
+              <div class="pop-cat">Fuerte</div>
+              <div class="pop-name">Pollo Kung Pao</div>
+              <div class="pop-bot">
+                <span class="pop-price">$155</span>
+                <button class="add-s">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="pop-card">
+            <div class="pop-img-wrap">
+              <img class="pop-img" src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=300&fit=crop" alt="Cerdo Agridulce" loading="lazy">
+            </div>
+            <div class="pop-info">
+              <div class="pop-cat">Fuerte</div>
+              <div class="pop-name">Cerdo Agridulce</div>
+              <div class="pop-bot">
+                <span class="pop-price">$145</span>
+                <button class="add-s">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="pop-card">
+            <div class="pop-img-wrap">
+              <img class="pop-img" src="https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400&h=300&fit=crop" alt="Pato Pekín" loading="lazy">
+            </div>
+            <div class="pop-info">
+              <div class="pop-cat">Fuerte</div>
+              <div class="pop-name">Pato Pekín</div>
+              <div class="pop-bot">
+                <span class="pop-price">$280</span>
+                <button class="add-s">+</button>
               </div>
             </div>
           </div>
@@ -601,40 +247,40 @@
       </div>
 
       <!-- CATEGORIES -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Categorías</div>
+      <div class="sec">
+        <div class="sec-h">
+          <div class="sec-t">Categorías</div>
         </div>
         <div class="cat-scroll">
-          <div class="chip active">
+          <div class="chip active" data-cat="all">
             <div class="chip-icon">📋</div>
             <span class="chip-text">Todos</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="entradas">
             <div class="chip-icon">🥟</div>
             <span class="chip-text">Entradas</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="sopas">
             <div class="chip-icon">🍜</div>
             <span class="chip-text">Sopas</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="platillos">
             <div class="chip-icon">🍗</div>
             <span class="chip-text">Fuertes</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="arroz">
             <div class="chip-icon">🍚</div>
             <span class="chip-text">Arroz</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="mariscos">
             <div class="chip-icon">🦐</div>
             <span class="chip-text">Mariscos</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="bebidas">
             <div class="chip-icon">🍵</div>
             <span class="chip-text">Bebidas</span>
           </div>
-          <div class="chip">
+          <div class="chip" data-cat="postres">
             <div class="chip-icon">🍨</div>
             <span class="chip-text">Postres</span>
           </div>
@@ -642,258 +288,270 @@
       </div>
 
       <!-- MENU HEADER -->
-      <div class="menu-header">
-        <div class="menu-title-row">
-          <div class="title-dot"></div>
-          <div class="menu-title">Todos los Platillos</div>
+      <div class="menu-h">
+        <div class="menu-tr">
+          <div class="t-dot"></div>
+          <div class="menu-t" id="menuTitle">Todos los Platillos</div>
         </div>
-        <div class="count-badge">24</div>
+        <div class="c-badge" id="menuCount">24</div>
       </div>
 
       <!-- MENU ITEMS -->
-      <div class="menu-card">
-        <div class="menu-img">🥟</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Rollitos Primavera</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+      <div id="menuList">
+        <!-- Entradas -->
+        <div class="m-card" data-cat="entradas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1677678071288-ff34afd5765f?w=400&h=300&fit=crop" alt="Rollitos Primavera" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Rollitos Primavera</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Crujientes rollitos rellenos de vegetales frescos con salsa agridulce</div>
+            <div class="m-pr"><div><div class="m-price">$85</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
           </div>
-          <div class="menu-desc">Crujientes rollitos rellenos de vegetales frescos con salsa agridulce</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$85</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
+        </div>
+        <div class="m-card" data-cat="entradas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400&h=300&fit=crop" alt="Wonton Frito" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Wonton Frito</div></div>
+            <div class="m-desc">Masa crujiente rellena de carne de cerdo y camarones</div>
+            <div class="m-pr"><div><div class="m-price">$95</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="entradas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop" alt="Costillas BBQ" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Costillas BBQ</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Costillas de cerdo glaseadas con salsa BBQ estilo cantonés</div>
+            <div class="m-pr"><div><div class="m-price">$130</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="entradas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1564894809611-1742fc40ed80?w=400&h=300&fit=crop" alt="Edamames" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Edamames</div></div>
+            <div class="m-desc">Vainas de soya al vapor con sal de mar</div>
+            <div class="m-pr"><div><div class="m-price">$65</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+
+        <!-- Sopas -->
+        <div class="m-card" data-cat="sopas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&h=300&fit=crop" alt="Sopa Wonton" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Sopa Wonton</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Caldo claro con dumplings de cerdo y camarón</div>
+            <div class="m-pr"><div><div class="m-price">$75</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="sopas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop" alt="Sopa Agripicante" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Sopa Agripicante</div></div>
+            <div class="m-desc">Sopa tradicional con tofu, hongos y huevo</div>
+            <div class="m-pr"><div><div class="m-price">$80</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="sopas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=400&h=300&fit=crop" alt="Sopa de Maíz" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Sopa de Maíz</div></div>
+            <div class="m-desc">Crema de maíz dulce con tiras de pollo</div>
+            <div class="m-pr"><div><div class="m-price">$70</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+
+        <!-- Platillos Fuertes -->
+        <div class="m-card" data-cat="platillos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&h=300&fit=crop" alt="Pollo Kung Pao" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Pollo Kung Pao</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Pollo salteado con cacahuates, chiles secos y vegetales</div>
+            <div class="m-pr"><div><div class="m-price">$155</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="platillos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&h=300&fit=crop" alt="Cerdo Agridulce" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Cerdo Agridulce</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Trozos de cerdo empanizado en salsa agridulce con piña</div>
+            <div class="m-pr"><div><div class="m-price">$145</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="platillos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop" alt="Res con Brócoli" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Res con Brócoli</div></div>
+            <div class="m-desc">Tiras de res salteadas con brócoli fresco en salsa de ostión</div>
+            <div class="m-pr"><div><div class="m-price">$165</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="platillos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400&h=300&fit=crop" alt="Pato Pekín" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Pato Pekín</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Pato rostizado con tortillas, cebollín y salsa hoisin</div>
+            <div class="m-pr"><div><div class="m-price">$280</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="platillos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=300&fit=crop" alt="Pollo con Almendras" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Pollo con Almendras</div></div>
+            <div class="m-desc">Pollo en cubos con almendras tostadas y vegetales</div>
+            <div class="m-pr"><div><div class="m-price">$140</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+
+        <!-- Arroz -->
+        <div class="m-card" data-cat="arroz">
+          <img class="m-img" src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop" alt="Arroz Frito Especial" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Arroz Frito Especial</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Arroz salteado con camarón, pollo, cerdo, huevo y vegetales</div>
+            <div class="m-pr"><div><div class="m-price">$125</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="arroz">
+          <img class="m-img" src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop" alt="Arroz Frito con Pollo" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Arroz Frito con Pollo</div></div>
+            <div class="m-desc">Arroz salteado con pollo, huevo y verduras</div>
+            <div class="m-pr"><div><div class="m-price">$105</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="arroz">
+          <img class="m-img" src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&h=300&fit=crop" alt="Arroz Frito con Camarón" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Arroz Frito con Camarón</div></div>
+            <div class="m-desc">Arroz salteado con camarones frescos y vegetales</div>
+            <div class="m-pr"><div><div class="m-price">$135</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+
+        <!-- Mariscos -->
+        <div class="m-card" data-cat="mariscos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&h=300&fit=crop" alt="Camarones al Ajo" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Camarones al Ajo</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Camarones salteados con abundante ajo y mantequilla</div>
+            <div class="m-pr"><div><div class="m-price">$195</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="mariscos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=400&h=300&fit=crop" alt="Pescado Frito" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Pescado Frito Cantón</div></div>
+            <div class="m-desc">Filete de pescado crujiente con salsa agridulce y vegetales</div>
+            <div class="m-pr"><div><div class="m-price">$185</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="mariscos">
+          <img class="m-img" src="https://images.unsplash.com/photo-1625943553852-781c6dd46faa?w=400&h=300&fit=crop" alt="Camarones Langosta" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Camarones c/ Langosta</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Camarones en salsa cremosa de langosta con cebollín</div>
+            <div class="m-pr"><div><div class="m-price">$220</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+
+        <!-- Bebidas -->
+        <div class="m-card" data-cat="bebidas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop" alt="Té de Jazmín" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Té de Jazmín</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Té verde perfumado con flores de jazmín</div>
+            <div class="m-pr"><div><div class="m-price">$35</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="bebidas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1513558161293-cdaf765ed514?w=400&h=300&fit=crop" alt="Limonada Lychee" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Limonada de Lychee</div></div>
+            <div class="m-desc">Limonada refrescante con lychee natural</div>
+            <div class="m-pr"><div><div class="m-price">$55</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="bebidas">
+          <img class="m-img" src="https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=400&h=300&fit=crop" alt="Horchata" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Agua de Horchata</div></div>
+            <div class="m-desc">Bebida tradicional de arroz con canela</div>
+            <div class="m-pr"><div><div class="m-price">$40</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+
+        <!-- Postres -->
+        <div class="m-card" data-cat="postres">
+          <img class="m-img" src="https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=400&h=300&fit=crop" alt="Helado Frito" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Helado Frito</div><div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div></div>
+            <div class="m-desc">Bola de helado de vainilla empanizada y frita con miel</div>
+            <div class="m-pr"><div><div class="m-price">$75</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="postres">
+          <img class="m-img" src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop" alt="Plátano Caramelizado" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Plátano Caramelizado</div></div>
+            <div class="m-desc">Plátano frito con caramelo y ajonjolí</div>
+            <div class="m-pr"><div><div class="m-price">$65</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
+          </div>
+        </div>
+        <div class="m-card" data-cat="postres">
+          <img class="m-img" src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=300&fit=crop" alt="Galletas de la Fortuna" loading="lazy">
+          <div class="m-info">
+            <div class="m-top"><div class="m-name">Galletas de la Fortuna</div></div>
+            <div class="m-desc">Galletas crujientes con mensaje de la suerte</div>
+            <div class="m-pr"><div><div class="m-price">$25</div><div class="m-curr">MXN</div></div><button class="add-b">+</button></div>
           </div>
         </div>
       </div>
 
-      <div class="menu-card">
-        <div class="menu-img">🥟</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Wonton Frito</div>
-          </div>
-          <div class="menu-desc">Masa crujiente rellena de carne de cerdo y camarones</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$95</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🥟</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Costillas BBQ</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Costillas de cerdo glaseadas con salsa BBQ estilo cantonés</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$130</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🥟</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Edamames</div>
-          </div>
-          <div class="menu-desc">Vainas de soya al vapor con sal de mar</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$65</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍜</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Sopa Wonton</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Caldo claro con dumplings de cerdo y camarón</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$75</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍜</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Sopa Agripicante</div>
-          </div>
-          <div class="menu-desc">Sopa tradicional con tofu, hongos y huevo</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$80</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍗</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Pollo Kung Pao</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Pollo salteado con cacahuates, chiles secos y vegetales</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$155</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍗</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Cerdo Agridulce</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Trozos de cerdo empanizado en salsa agridulce con piña</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$145</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍗</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Pato Pekín</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Pato rostizado con tortillas, cebollín y salsa hoisin</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$280</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🦐</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Camarones al Ajo</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Camarones salteados con abundante ajo y mantequilla</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$195</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍵</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Té de Jazmín</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Té verde perfumado con flores de jazmín</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$35</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-card">
-        <div class="menu-img">🍨</div>
-        <div class="menu-info">
-          <div class="menu-top-row">
-            <div class="menu-name">Helado Frito</div>
-            <div class="star-badge"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></div>
-          </div>
-          <div class="menu-desc">Bola de helado de vainilla empanizada y frita con miel</div>
-          <div class="menu-price-row">
-            <div>
-              <div class="menu-price">$75</div>
-              <div class="menu-currency">MXN</div>
-            </div>
-            <button class="add-btn">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div style="height: 20px;"></div>
+      <div style="height:20px"></div>
 
       <!-- BOTTOM NAV -->
-      <div class="bottom-nav">
-        <div class="nav-item active">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-label" style="color: var(--primary);">Inicio</span>
-          <div class="nav-dot"></div>
+      <div class="b-nav">
+        <div class="n-item active">
+          <span class="n-icon">🏠</span>
+          <span class="n-label" style="color:var(--primary)">Inicio</span>
+          <div class="n-dot"></div>
         </div>
-        <div class="nav-item">
-          <span class="nav-icon">📋</span>
-          <span class="nav-label">Menú</span>
+        <div class="n-item">
+          <span class="n-icon">📋</span>
+          <span class="n-label">Menú</span>
         </div>
-        <div class="nav-item">
-          <span class="nav-icon">🛒</span>
-          <span class="nav-label">Carrito</span>
+        <div class="n-item">
+          <span class="n-icon">🛒</span>
+          <span class="n-label">Carrito</span>
         </div>
-        <div class="nav-item">
-          <span class="nav-icon">👤</span>
-          <span class="nav-label">Perfil</span>
+        <div class="n-item">
+          <span class="n-icon">👤</span>
+          <span class="n-label">Perfil</span>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    const catNames = {all:'Todos los Platillos',entradas:'Entradas',sopas:'Sopas',platillos:'Platillos Fuertes',arroz:'Arroz',mariscos:'Mariscos',bebidas:'Bebidas',postres:'Postres'};
     document.querySelectorAll('.chip').forEach(chip => {
       chip.addEventListener('click', () => {
         document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
+        const cat = chip.dataset.cat;
+        const cards = document.querySelectorAll('.m-card');
+        let count = 0;
+        cards.forEach((card, i) => {
+          if (cat === 'all' || card.dataset.cat === cat) {
+            card.style.display = 'flex';
+            card.style.animation = 'none';
+            card.offsetHeight;
+            card.style.animation = `fadeUp .4s ease ${i * .04}s both`;
+            count++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+        document.getElementById('menuTitle').textContent = catNames[cat] || 'Todos los Platillos';
+        document.getElementById('menuCount').textContent = count;
       });
     });
   </script>
