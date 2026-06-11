@@ -32,6 +32,7 @@ transition:all .2s;
 .btn-green{background:linear-gradient(135deg,#064d1c,var(--green));}
 .btn-gold{background:linear-gradient(135deg,#8a6d2e,var(--gold));color:#111;}
 .btn-outline{background:transparent;color:var(--gold);}
+.btn-amber{background:linear-gradient(135deg,#8a6d00,#e89b00);color:#111;}
 
 /* CARDS */
 .card{
@@ -56,7 +57,7 @@ background:var(--surface);border-bottom:1px solid rgba(235,192,109,.2);
 padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
 position:sticky;top:0;z-index:100;
 }
-.header h1{font-size:1.3rem;color:var(--gold);}
+.header h1{font-size:1.3rem;color:var(--gold);display:flex;align-items:center;gap:10px;}
 .header .role-badge{
 font-size:.75rem;background:var(--red-dark);padding:4px 12px;
 border-radius:20px;border:1px solid var(--red);
@@ -92,7 +93,7 @@ width:380px;max-width:95vw;text-align:center;
 }
 .login-card h1{font-size:2rem;color:var(--gold);margin-bottom:6px;}
 .login-card p{color:rgba(245,232,208,.5);margin-bottom:24px;}
-.login-card .dragon-icon{font-size:4rem;margin-bottom:10px;}
+.login-card .dragon-icon{margin-bottom:10px;}
 .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
 .role-btn{
 padding:14px;border-radius:14px;cursor:pointer;text-align:center;
@@ -113,6 +114,15 @@ border:2px solid rgba(235,192,109,.2);transition:all .2s;font-size:.9rem;
 }
 .mesa-cell.libre{background:rgba(15,143,54,.2);border-color:var(--green);}
 .mesa-cell.ocupada{background:rgba(212,0,0,.2);border-color:var(--red);}
+.mesa-cell.cuenta{
+background:rgba(235,192,109,.25);
+border-color:var(--gold);
+animation:blink-cuenta 1s infinite;
+}
+@keyframes blink-cuenta{
+0%,100%{opacity:1;box-shadow:0 0 14px rgba(235,192,109,.6);}
+50%{opacity:0.4;box-shadow:0 0 4px rgba(235,192,109,.2);}
+}
 .mesa-cell:hover{transform:scale(1.05);}
 .mesa-cell .mn{font-size:1.1rem;}
 .mesa-cell .ms{font-size:.65rem;margin-top:2px;opacity:.7;}
@@ -129,6 +139,11 @@ margin-bottom:12px;padding:16px;border-left:4px solid var(--gold);
 .order-card .oc-time{font-size:.78rem;opacity:.6;}
 .order-card .oc-items{margin:8px 0;}
 .order-card .oc-item{padding:3px 0;font-size:.9rem;}
+.order-card .oc-notas{
+padding:6px 10px;margin:6px 0;border-radius:8px;
+background:rgba(235,192,109,.1);border-left:3px solid var(--gold);
+font-size:.83rem;font-style:italic;color:var(--gold);
+}
 .order-card .oc-status{
 display:inline-block;padding:4px 12px;border-radius:8px;font-size:.78rem;font-weight:700;
 }
@@ -190,6 +205,31 @@ position:absolute;top:12px;right:12px;background:var(--red);
 padding:4px 12px;border-radius:8px;font-weight:700;font-size:.85rem;
 }
 
+/* NOTIFICATION BADGE */
+.notif-badge{
+display:inline-block;background:var(--gold);color:#111;
+padding:3px 10px;border-radius:10px;font-size:.78rem;font-weight:700;
+animation:pulse-notif 1s infinite;
+}
+@keyframes pulse-notif{
+0%,100%{transform:scale(1);box-shadow:0 0 6px rgba(235,192,109,.6);}
+50%{transform:scale(1.1);box-shadow:0 0 14px rgba(235,192,109,.9);}
+}
+
+/* GESTION CARTA GRID */
+.gestion-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
+.gestion-item{display:flex;gap:12px;align-items:center;padding:14px;}
+.gestion-item img{width:60px;height:60px;border-radius:10px;object-fit:cover;flex-shrink:0;}
+.gestion-item .gi-info{flex:1;min-width:0;}
+.gestion-item .gi-name{font-weight:700;font-size:.95rem;}
+.gestion-item .gi-cat{font-size:.72rem;color:var(--red);text-transform:uppercase;}
+.gestion-item .gi-price{color:var(--gold);font-weight:700;}
+
+/* MIS MESAS */
+.mis-mesas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.mis-mesa-card{position:relative;}
+.mis-mesa-card .notif-corner{position:absolute;top:10px;right:10px;}
+
 /* RESPONSIVE */
 @media(max-width:600px){
 .mesas-grid{grid-template-columns:repeat(5,1fr);gap:6px;}
@@ -199,6 +239,8 @@ padding:4px 12px;border-radius:8px;font-weight:700;font-size:.85rem;
 .tabs{gap:4px;padding:10px 12px;}
 .tab{padding:6px 12px;font-size:.8rem;}
 .main{padding:14px 12px;}
+.gestion-grid{grid-template-columns:1fr;}
+.mis-mesas-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -207,7 +249,7 @@ padding:4px 12px;border-radius:8px;font-weight:700;font-size:.85rem;
 <!-- ========== LOGIN ========== -->
 <div id="loginScreen" class="login-wrap">
 <div class="login-card card card-gold">
-<div class="dragon-icon">&#128009;</div>
+<div class="dragon-icon"><img src="logo-dragon.png" style="height:50px;border-radius:12px;"></div>
 <h1>El Dragon Rojo</h1>
 <p>Sistema Gastronomico</p>
 <div class="role-grid">
@@ -239,7 +281,7 @@ padding:4px 12px;border-radius:8px;font-weight:700;font-size:.85rem;
 <!-- ========== APP ========== -->
 <div id="appScreen" style="display:none;">
 <div class="header">
-<h1>&#128009; El Dragon Rojo</h1>
+<h1><img src="logo-dragon.png" style="height:50px;border-radius:12px;"> El Dragon Rojo</h1>
 <div style="display:flex;align-items:center;gap:12px;">
 <span class="role-badge" id="roleBadge"></span>
 <button class="btn btn-sm btn-outline" onclick="logout()">Salir</button>
@@ -297,6 +339,18 @@ let currentTab = null;
 function lsGet(k,def){try{const v=localStorage.getItem('dr_'+k);return v?JSON.parse(v):def;}catch(e){return def;}}
 function lsSet(k,v){localStorage.setItem('dr_'+k,JSON.stringify(v));}
 
+// ============================================================
+// MENU MANAGEMENT (getMenu / saveMenu)
+// ============================================================
+function getMenu(){
+const custom = lsGet('custom_menu', null);
+return custom || MENU_DATA;
+}
+function saveMenu(menu){
+lsSet('custom_menu', menu);
+bc.postMessage({type:'menu'});
+}
+
 // Init mesas
 function initMesas(){
 if(!lsGet('mesas',null)){
@@ -320,13 +374,21 @@ function setReservas(r){lsSet('reservas',r);bc.postMessage({type:'reservas'});}
 function getPromos(){return lsGet('promos',[]);}
 function setPromos(p){lsSet('promos',p);bc.postMessage({type:'promos'});}
 
+// Mozo Notifications
+function getMozoNotifs(){return lsGet('mozo_notifs',[]);}
+function setMozoNotifs(n){lsSet('mozo_notifs',n);bc.postMessage({type:'mozo_notifs'});}
+
 // BroadcastChannel
 const bc = new BroadcastChannel('dragon_rojo_sync');
 bc.onmessage = (e) => {
 if(currentTab) renderCurrentTab();
+if(currentRole==='mozo') updateMozoTabLabel();
 };
 window.addEventListener('storage',(e)=>{
-if(e.key && e.key.startsWith('dr_') && currentTab) renderCurrentTab();
+if(e.key && e.key.startsWith('dr_') && currentTab){
+renderCurrentTab();
+if(currentRole==='mozo') updateMozoTabLabel();
+}
 });
 
 // Audio beep
@@ -388,8 +450,8 @@ selectedRole=null;
 // APP INIT
 // ============================================================
 const ROLE_TABS = {
-admin:['Mapa de Mesas','Reservas','Carta Digital','Promos del Dia','Pedidos','Cobros','Pantalla Cocina','Pantalla Barra'],
-mozo:['Mapa de Mesas','Tomar Pedido','Ver Pedidos','Solicitar Cobro'],
+admin:['Mapa de Mesas','Reservas','Carta Digital','Gestion Carta','Promos del Dia','Pedidos','Cobros','Pantalla Cocina','Pantalla Barra'],
+mozo:['Mapa de Mesas','Tomar Pedido','Mis Mesas','Solicitar Cobro'],
 cocina:['Pantalla Cocina'],
 barra:['Pantalla Barra'],
 cliente:['Carta Digital','Promos del Dia','Hacer Reserva'],
@@ -403,10 +465,23 @@ renderTabs();
 switchTab(ROLE_TABS[currentRole][0]);
 }
 
+function getMozoTabLabel(t){
+if(t==='Mis Mesas' && currentRole==='mozo'){
+const notifs = getMozoNotifs().filter(n=>!n.read);
+if(notifs.length>0) return 'Mis Mesas ('+notifs.length+')';
+}
+return t;
+}
+
+function updateMozoTabLabel(){
+if(currentRole!=='mozo') return;
+renderTabs();
+}
+
 function renderTabs(){
 const bar=document.getElementById('tabsBar');
 bar.innerHTML=ROLE_TABS[currentRole].map(t=>
-`<div class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${t}</div>`
+`<div class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${getMozoTabLabel(t)}</div>`
 ).join('');
 }
 
@@ -420,13 +495,14 @@ switch(currentTab){
 case 'Mapa de Mesas':renderMesas(main);break;
 case 'Reservas':renderReservas(main);break;
 case 'Carta Digital':renderCarta(main);break;
+case 'Gestion Carta':renderGestionCarta(main);break;
 case 'Promos del Dia':renderPromos(main);break;
 case 'Pedidos':renderPedidos(main);break;
 case 'Cobros':renderCobros(main);break;
 case 'Pantalla Cocina':renderCocina(main);break;
 case 'Pantalla Barra':renderBarra(main);break;
 case 'Tomar Pedido':renderTomarPedido(main);break;
-case 'Ver Pedidos':renderVerPedidos(main);break;
+case 'Mis Mesas':renderMisMesas(main);break;
 case 'Solicitar Cobro':renderSolicitarCobro(main);break;
 case 'Hacer Reserva':renderHacerReserva(main);break;
 }
@@ -437,28 +513,34 @@ case 'Hacer Reserva':renderHacerReserva(main);break;
 // ============================================================
 function renderMesas(el){
 const mesas=getMesas();
+const libreCount = mesas.filter(m=>m.status==='libre').length;
+const ocupCount = mesas.filter(m=>m.status==='ocupada').length;
+const cuentaCount = mesas.filter(m=>m.status==='cuenta').length;
 el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Mapa de Mesas</h2>
-<div style="display:flex;gap:16px;margin-bottom:16px;">
-<span style="font-size:.85rem;">&#128994; Libre: ${mesas.filter(m=>m.status==='libre').length}</span>
-<span style="font-size:.85rem;">&#128308; Ocupada: ${mesas.filter(m=>m.status==='ocupada').length}</span>
+<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+<span style="font-size:.85rem;">&#128994; Libre: ${libreCount}</span>
+<span style="font-size:.85rem;">&#128308; Ocupada: ${ocupCount}</span>
+<span style="font-size:.85rem;">&#128993; Cuenta: ${cuentaCount}</span>
 </div>
-<div class="mesas-grid">${mesas.map(m=>
-`<div class="mesa-cell ${m.status}" onclick="toggleMesa(${m.id})">
+<div class="mesas-grid">${mesas.map(m=>{
+const statusLabel = m.status==='libre'?'Libre':m.status==='ocupada'?'Ocup.':'Cuenta';
+return `<div class="mesa-cell ${m.status}" onclick="toggleMesa(${m.id})">
 <span class="mn">${m.id}</span>
-<span class="ms">${m.status==='libre'?'Libre':'Ocup.'}</span>
-</div>`).join('')}</div>
+<span class="ms">${statusLabel}</span>
+</div>`;
+}).join('')}</div>
 <div id="mesaDetail" style="margin-top:20px;"></div>`;
 }
 
 function toggleMesa(id){
 const mesas=getMesas();
 const m=mesas.find(x=>x.id===id);
-if(m.status==='libre'){m.status='ocupada';}
-else{
-// Show detail instead of toggling if admin
-if(currentRole==='admin'){showMesaDetail(id);return;}
-m.status='libre';m.pedidos=[];
+if(currentRole==='admin'){
+showMesaDetail(id);return;
 }
+if(m.status==='libre'){m.status='ocupada';}
+else if(m.status==='ocupada'){m.status='libre';m.pedidos=[];}
+else if(m.status==='cuenta'){m.status='libre';m.pedidos=[];}
 setMesas(mesas);renderCurrentTab();
 }
 
@@ -470,11 +552,14 @@ let total=0;
 let itemsHtml=orders.map(o=>{
 return o.items.map(it=>{total+=it.price*it.qty;return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.9rem;"><span>${it.qty}x ${it.name}</span><span>$${(it.price*it.qty).toLocaleString()}</span></div>`;}).join('');
 }).join('');
+const statusLabel = m.status==='libre'?'LIBRE':m.status==='ocupada'?'OCUPADA':'CUENTA';
 det.innerHTML=`<div class="card card-gold">
-<h3 style="color:var(--gold);margin-bottom:12px;">Mesa ${id} - ${m.status.toUpperCase()}</h3>
+<h3 style="color:var(--gold);margin-bottom:12px;">Mesa ${id} - ${statusLabel}</h3>
 ${orders.length?`<div>${itemsHtml}</div><div style="text-align:right;margin-top:8px;font-size:1.2rem;color:var(--gold);font-weight:700;">Total: $${total.toLocaleString()}</div>`:'<p style="opacity:.5;">Sin pedidos</p>'}
-<div style="margin-top:14px;display:flex;gap:8px;">
-<button class="btn btn-sm ${m.status==='libre'?'':'btn-green'}" onclick="setMesaStatus(${id},'${m.status==='libre'?'ocupada':'libre'}')">${m.status==='libre'?'Marcar Ocupada':'Liberar Mesa'}</button>
+<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+${m.status==='libre'?`<button class="btn btn-sm" onclick="setMesaStatus(${id},'ocupada')">Marcar Ocupada</button>`:''}
+${m.status==='ocupada'?`<button class="btn btn-sm btn-green" onclick="setMesaStatus(${id},'libre')">Liberar Mesa</button>`:''}
+${m.status==='cuenta'?`<button class="btn btn-sm btn-gold" onclick="openCobro(${id})">Procesar Cobro</button><button class="btn btn-sm btn-green" onclick="setMesaStatus(${id},'libre')">Liberar Mesa</button>`:''}
 </div>
 </div>`;
 }
@@ -565,15 +650,14 @@ window.open(`https://wa.me/${WA_NUMBER}?text=${text}`,'_blank');
 // CARTA DIGITAL
 // ============================================================
 function renderCarta(el){
-const isAdmin = currentRole==='admin';
+const menu = getMenu();
 let html=`<h2 style="color:var(--gold);margin-bottom:20px;">Carta Digital</h2>`;
-// Category filter
 html+=`<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
 <button class="btn btn-sm btn-gold" onclick="filterCarta('all')">Todos</button>
 ${ALL_CATS.map(c=>`<button class="btn btn-sm btn-outline" onclick="filterCarta('${c}')">${c}</button>`).join('')}
 </div>`;
 html+=`<div class="menu-grid" id="cartaGrid">`;
-MENU_DATA.forEach(item=>{
+menu.forEach(item=>{
 html+=`<div class="card menu-item" data-cat="${item.cat}">
 <img src="${item.img}" alt="${item.name}" loading="lazy" onerror="this.style.display='none'">
 <div class="mi-cat">${item.cat}</div>
@@ -593,10 +677,76 @@ el.style.display=(cat==='all'||el.dataset.cat===cat)?'block':'none';
 }
 
 // ============================================================
+// GESTION CARTA (Admin)
+// ============================================================
+function renderGestionCarta(el){
+const menu = getMenu();
+let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+<h2 style="color:var(--gold);">Gestion Carta</h2>
+<button class="btn btn-sm" onclick="openProductoForm(-1)">+ Agregar Producto</button>
+</div>`;
+html+=`<div class="gestion-grid">`;
+menu.forEach((item,i)=>{
+html+=`<div class="card gestion-item">
+<img src="${item.img}" alt="${item.name}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect fill=%22%23222%22 width=%2260%22 height=%2260%22/></svg>'">
+<div class="gi-info">
+<div class="gi-cat">${item.cat}</div>
+<div class="gi-name">${item.name}</div>
+<div class="gi-price">$${item.price.toLocaleString()}</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;">
+<button class="btn btn-sm btn-outline" onclick="openProductoForm(${i})">Editar</button>
+<button class="btn btn-sm" onclick="eliminarProducto(${i})">Eliminar</button>
+</div>
+</div>`;
+});
+html+=`</div>`;
+el.innerHTML=html;
+}
+
+function openProductoForm(idx){
+const menu = getMenu();
+const item = idx>=0 ? menu[idx] : null;
+const catOpts = ALL_CATS.map(c=>`<option value="${c}" ${item&&item.cat===c?'selected':''}>${c}</option>`).join('');
+openModal(`<h2>${item?'Editar':'Agregar'} Producto</h2>
+<div style="display:grid;gap:12px;">
+<div><label>Nombre</label><input id="prodName" value="${item?item.name:''}"></div>
+<div><label>Precio</label><input type="number" id="prodPrice" min="0" value="${item?item.price:''}"></div>
+<div><label>Categoria</label><select id="prodCat">${catOpts}</select></div>
+<div><label>Descripcion</label><textarea id="prodDesc" rows="2">${item?item.desc:''}</textarea></div>
+<div><label>URL de imagen</label><input id="prodImg" value="${item?item.img:''}"></div>
+<button class="btn" onclick="saveProducto(${idx})">Guardar</button>
+</div>`);
+}
+
+function saveProducto(idx){
+const name=document.getElementById('prodName').value.trim();
+const price=parseInt(document.getElementById('prodPrice').value);
+const cat=document.getElementById('prodCat').value;
+const desc=document.getElementById('prodDesc').value.trim();
+const img=document.getElementById('prodImg').value.trim();
+if(!name||!price){alert('Completa nombre y precio');return;}
+const menu=[...getMenu()];
+const prod={cat,name,price,img,desc};
+if(idx>=0){menu[idx]=prod;}else{menu.push(prod);}
+saveMenu(menu);
+closeModal();renderCurrentTab();
+}
+
+function eliminarProducto(idx){
+if(!confirm('Eliminar este producto?'))return;
+const menu=[...getMenu()];
+menu.splice(idx,1);
+saveMenu(menu);
+renderCurrentTab();
+}
+
+// ============================================================
 // PROMOS DEL DIA
 // ============================================================
 function renderPromos(el){
 const promos=getPromos();
+const menu=getMenu();
 const isAdmin=currentRole==='admin';
 let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
 <h2 style="color:var(--gold);">Promos del Dia</h2>
@@ -606,7 +756,7 @@ if(promos.length===0){
 html+=`<div class="card"><p style="opacity:.5;">No hay promos activas</p></div>`;
 }else{
 html+=`<div class="menu-grid">${promos.map((p,i)=>{
-const item=MENU_DATA.find(m=>m.name===p.item);
+const item=menu.find(m=>m.name===p.item);
 const discounted=item?Math.round(item.price*(1-p.discount/100)):0;
 return `<div class="card promo-card">
 ${item?`<img src="${item.img}" alt="${p.item}" loading="lazy" style="width:calc(100%+40px);height:140px;object-fit:cover;border-radius:14px 14px 0 0;margin:-20px -20px 12px;" onerror="this.style.display='none'">`:''}
@@ -624,7 +774,8 @@ el.innerHTML=html;
 }
 
 function openPromoForm(){
-const opts=MENU_DATA.map(m=>`<option value="${m.name}">${m.name} ($${m.price.toLocaleString()})</option>`).join('');
+const menu=getMenu();
+const opts=menu.map(m=>`<option value="${m.name}">${m.name} ($${m.price.toLocaleString()})</option>`).join('');
 openModal(`<h2>Nueva Promo</h2>
 <div style="display:grid;gap:12px;">
 <div><label>Item del menu</label><select id="pItem">${opts}</select></div>
@@ -656,26 +807,56 @@ orders.map((o,i)=>renderOrderCard(o,i,true)).join('')}</div>`;
 
 function renderOrderCard(o,i,showControls){
 const statusClass={'Nuevo':'nuevo','En preparacion':'preparando','Listo':'listo','Entregado':'entregado'}[o.status]||'nuevo';
+const notasHtml = o.notas ? `<div class="oc-notas">Notas: ${o.notas}</div>` : '';
+const isCocinaOrBarra = currentRole==='cocina'||currentRole==='barra';
+let controlsHtml='';
+if(showControls){
+if(isCocinaOrBarra){
+controlsHtml=`<div style="display:flex;gap:6px;">
+${o.status!=='Listo'&&o.status!=='Entregado'?`<button class="btn btn-sm btn-amber" onclick="changeOrderStatus(${i},'En preparacion')">En preparacion</button>`:''}
+${o.status!=='Listo'&&o.status!=='Entregado'?`<button class="btn btn-sm btn-green" onclick="changeOrderStatus(${i},'Listo')">Pedido Listo</button>`:''}
+${o.status==='Listo'?`<span style="color:var(--green);font-weight:700;font-size:.85rem;">Marcado como Listo</span>`:''}
+</div>`;
+}else{
+controlsHtml=`<div style="display:flex;gap:6px;">
+${o.status==='Nuevo'?`<button class="btn btn-sm btn-amber" onclick="changeOrderStatus(${i},'En preparacion')">Preparar</button>`:''}
+${o.status==='En preparacion'?`<button class="btn btn-sm btn-green" onclick="changeOrderStatus(${i},'Listo')">Listo</button>`:''}
+${o.status==='Listo'?`<button class="btn btn-sm btn-gold" onclick="changeOrderStatus(${i},'Entregado')">Entregado</button>`:''}
+</div>`;
+}
+}
 return `<div class="card order-card ${statusClass}" style="margin-bottom:12px;">
 <div class="oc-header">
 <span class="oc-mesa">Mesa ${o.mesa} ${o.dest==='cocina'?'&#127859;':'&#127864;'} ${o.dest}</span>
 <span class="oc-time">${o.time}</span>
 </div>
 <div class="oc-items">${o.items.map(it=>`<div class="oc-item">${it.qty}x ${it.name} <span style="opacity:.5;">$${(it.price*it.qty).toLocaleString()}</span></div>`).join('')}</div>
+${notasHtml}
 <div style="display:flex;justify-content:space-between;align-items:center;">
 <span class="oc-status status-${statusClass}">${o.status}</span>
-${showControls?`<div style="display:flex;gap:6px;">
-${o.status==='Nuevo'?`<button class="btn btn-sm" style="background:rgba(232,155,0,.4);" onclick="changeOrderStatus(${i},'En preparacion')">Preparar</button>`:''}
-${o.status==='En preparacion'?`<button class="btn btn-sm btn-green" onclick="changeOrderStatus(${i},'Listo')">Listo</button>`:''}
-${o.status==='Listo'?`<button class="btn btn-sm btn-gold" onclick="changeOrderStatus(${i},'Entregado')">Entregado</button>`:''}
-</div>`:''}
+${controlsHtml}
 </div>
 </div>`;
 }
 
-function changeOrderStatus(i,status){
-const orders=getOrders();
-if(orders[i]){orders[i].status=status;setOrders(orders);renderCurrentTab();}
+function changeOrderStatus(i, status){
+const orders = getOrders();
+if(orders[i]){
+orders[i].status = status;
+setOrders(orders);
+if(status === 'Listo'){
+const notifs = getMozoNotifs();
+notifs.push({
+mesa: orders[i].mesa,
+dest: orders[i].dest,
+time: new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),
+read: false
+});
+setMozoNotifs(notifs);
+playBeep();
+}
+renderCurrentTab();
+}
 }
 
 // ============================================================
@@ -684,7 +865,6 @@ if(orders[i]){orders[i].status=status;setOrders(orders);renderCurrentTab();}
 let lastCocinaCount=0;
 function renderCocina(el){
 const orders=getOrders().filter(o=>o.dest==='cocina'&&o.status!=='Entregado');
-// Beep on new
 const newCount=orders.filter(o=>o.status==='Nuevo').length;
 if(currentRole==='cocina'&&newCount>lastCocinaCount)playBeep();
 lastCocinaCount=newCount;
@@ -723,12 +903,12 @@ let pedidoMesa=1;
 
 function renderTomarPedido(el){
 const mesas=getMesas();
-const ocupadas=mesas.filter(m=>m.status==='ocupada');
+const menu=getMenu();
 let html=`<h2 style="color:var(--gold);margin-bottom:16px;">Tomar Pedido</h2>
 <div style="display:flex;gap:12px;margin-bottom:20px;align-items:end;">
 <div style="flex:0 0 120px;"><label>Mesa</label>
 <select id="pedidoMesaSel" onchange="pedidoMesa=parseInt(this.value)">
-${mesas.map(m=>`<option value="${m.id}" ${m.id===pedidoMesa?'selected':''}>${m.id} (${m.status==='libre'?'L':'O'})</option>`).join('')}
+${mesas.map(m=>`<option value="${m.id}" ${m.id===pedidoMesa?'selected':''}>${m.id} (${m.status==='libre'?'L':m.status==='ocupada'?'O':'C'})</option>`).join('')}
 </select></div>
 </div>`;
 
@@ -739,7 +919,7 @@ ${ALL_CATS.map(c=>`<button class="btn btn-sm btn-outline" onclick="filterPedidoM
 
 // Menu items with qty
 html+=`<div id="pedidoMenuGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">`;
-MENU_DATA.forEach((item,idx)=>{
+menu.forEach((item,idx)=>{
 const inCart=pedidoCart.find(c=>c.name===item.name);
 const qty=inCart?inCart.qty:0;
 html+=`<div class="card" data-cat="${item.cat}" style="padding:14px;display:flex;align-items:center;gap:12px;">
@@ -749,9 +929,9 @@ html+=`<div class="card" data-cat="${item.cat}" style="padding:14px;display:flex
 <div style="font-size:.85rem;color:var(--gold);">$${item.price.toLocaleString()}</div>
 </div>
 <div class="qty">
-<button onclick="changePedidoQty('${item.name}',${item.price},'${item.cat}',-1)">-</button>
+<button onclick="changePedidoQty('${item.name.replace(/'/g,"\\'")}',${item.price},'${item.cat}',-1)">-</button>
 <span id="qty_${idx}">${qty}</span>
-<button onclick="changePedidoQty('${item.name}',${item.price},'${item.cat}',1)">+</button>
+<button onclick="changePedidoQty('${item.name.replace(/'/g,"\\'")}',${item.price},'${item.cat}',1)">+</button>
 </div>
 </div>`;
 });
@@ -766,12 +946,18 @@ ${pedidoCart.map(it=>`<div style="display:flex;justify-content:space-between;pad
 <span>${it.qty}x ${it.name}</span><span>$${(it.price*it.qty).toLocaleString()}</span>
 </div>`).join('')}
 <div style="text-align:right;margin-top:8px;font-size:1.2rem;color:var(--gold);font-weight:700;">Total: $${total.toLocaleString()}</div>
+<div style="margin-top:12px;">
+<label>Notas del pedido</label>
+<textarea id="pedidoNotas" rows="2" placeholder="Ej: sin cebolla, bien cocido, sin TACC...">${pedidoNotasTemp||''}</textarea>
+</div>
 <button class="btn" style="width:100%;margin-top:12px;" onclick="enviarPedido()">Enviar Pedido</button>
 </div>`;
 }
 
 el.innerHTML=html;
 }
+
+let pedidoNotasTemp='';
 
 function filterPedidoMenu(cat){
 document.querySelectorAll('#pedidoMenuGrid .card').forEach(el=>{
@@ -780,6 +966,9 @@ el.style.display=el.dataset.cat===cat?'flex':'none';
 }
 
 function changePedidoQty(name,price,cat,delta){
+// Save current notes before re-render
+const notasEl=document.getElementById('pedidoNotas');
+if(notasEl) pedidoNotasTemp=notasEl.value;
 let item=pedidoCart.find(c=>c.name===name);
 if(!item&&delta>0){pedidoCart.push({name,price,cat,qty:1});}
 else if(item){
@@ -792,72 +981,158 @@ renderCurrentTab();
 function enviarPedido(){
 if(pedidoCart.length===0)return;
 pedidoMesa=parseInt(document.getElementById('pedidoMesaSel').value);
+const notasEl=document.getElementById('pedidoNotas');
+const notas=notasEl?notasEl.value.trim():'';
 const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
 
 // Mark mesa as occupied
 const mesas=getMesas();const m=mesas.find(x=>x.id===pedidoMesa);
-if(m)m.status='ocupada';setMesas(mesas);
+if(m&&m.status==='libre')m.status='ocupada';setMesas(mesas);
 
 // Split food/drinks
 const foodItems=pedidoCart.filter(it=>FOOD_CATS.includes(it.cat));
 const drinkItems=pedidoCart.filter(it=>DRINK_CATS.includes(it.cat));
 
 if(foodItems.length>0){
-addOrder({mesa:pedidoMesa,dest:'cocina',items:foodItems.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole});
+addOrder({mesa:pedidoMesa,dest:'cocina',items:foodItems.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole,notas:notas});
 }
 if(drinkItems.length>0){
-addOrder({mesa:pedidoMesa,dest:'barra',items:drinkItems.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole});
+addOrder({mesa:pedidoMesa,dest:'barra',items:drinkItems.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole,notas:notas});
 }
 
 pedidoCart=[];
+pedidoNotasTemp='';
 alert('Pedido enviado!');
 renderCurrentTab();
 }
 
 // ============================================================
-// VER PEDIDOS (Mozo)
+// MIS MESAS (Mozo) - replaces Ver Pedidos
 // ============================================================
-function renderVerPedidos(el){
+function renderMisMesas(el){
 const orders=getOrders().filter(o=>o.mozo===currentRole);
-el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Mis Pedidos</h2>
-<div>${orders.length===0?'<div class="card"><p style="opacity:.5;">No has tomado pedidos aun</p></div>':
-orders.map((o,i)=>{
+const notifs=getMozoNotifs();
+const unreadNotifs=notifs.filter(n=>!n.read);
+
+// Get unique mesas where mozo has orders
+const mesaIds=[...new Set(orders.map(o=>o.mesa))];
+const mesas=getMesas();
+
+let html=`<h2 style="color:var(--gold);margin-bottom:16px;">Mis Mesas</h2>`;
+
+if(unreadNotifs.length>0){
+html+=`<div class="card card-gold" style="margin-bottom:16px;">
+<h3 style="color:var(--gold);margin-bottom:10px;">Notificaciones (${unreadNotifs.length})</h3>
+${unreadNotifs.map((n,ni)=>{
+const realIdx=notifs.indexOf(n);
+return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(235,192,109,.1);">
+<div>
+<span class="notif-badge">&#128276; Listo</span>
+<span style="margin-left:8px;">Mesa ${n.mesa} - ${n.dest} - ${n.time}</span>
+</div>
+<button class="btn btn-sm btn-outline" onclick="dismissNotif(${realIdx})">Visto</button>
+</div>`;
+}).join('')}
+</div>`;
+}
+
+if(mesaIds.length===0){
+html+=`<div class="card"><p style="opacity:.5;">No tenes mesas asignadas aun</p></div>`;
+}else{
+html+=`<div class="mis-mesas-grid">`;
+mesaIds.forEach(mid=>{
+const mesa=mesas.find(x=>x.id===mid);
+const mesaOrders=orders.filter(o=>o.mesa===mid);
+const total=mesaOrders.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.price*it.qty,0),0);
+const mesaNotifs=unreadNotifs.filter(n=>n.mesa===mid);
+const statusCounts={};
+mesaOrders.forEach(o=>{statusCounts[o.status]=(statusCounts[o.status]||0)+1;});
+const statusText=Object.entries(statusCounts).map(([k,v])=>`${v} ${k}`).join(', ');
+
+html+=`<div class="card mis-mesa-card" style="cursor:pointer;" onclick="showMisMesaDetail(${mid})">
+${mesaNotifs.length>0?`<div class="notif-corner"><span class="notif-badge">&#128276; Listo</span></div>`:''}
+<div style="font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:6px;">Mesa ${mid}</div>
+<div style="font-size:.85rem;margin-bottom:4px;">Pedidos: ${mesaOrders.length}</div>
+<div style="font-size:.85rem;margin-bottom:4px;">${statusText}</div>
+<div style="font-size:1rem;color:var(--gold);font-weight:700;">Total: $${total.toLocaleString()}</div>
+${mesa&&mesa.status==='cuenta'?'<div style="margin-top:6px;font-size:.82rem;color:var(--gold);font-weight:700;">Estado: Cuenta solicitada</div>':''}
+</div>`;
+});
+html+=`</div>`;
+}
+
+el.innerHTML=html;
+}
+
+function showMisMesaDetail(mesaId){
+const orders=getOrders().filter(o=>o.mesa===mesaId&&o.mozo===currentRole);
+let html=`<h2>Mesa ${mesaId} - Detalle</h2>`;
+orders.forEach((o,oi)=>{
 const realIdx=getOrders().indexOf(o);
-return renderOrderCard(o,realIdx,false);
-}).join('')}</div>`;
+html+=renderOrderCard(o,realIdx,false);
+});
+openModal(html);
+}
+
+function dismissNotif(idx){
+const notifs=getMozoNotifs();
+if(notifs[idx]) notifs[idx].read=true;
+setMozoNotifs(notifs);
+renderCurrentTab();
+updateMozoTabLabel();
 }
 
 // ============================================================
 // SOLICITAR COBRO (Mozo)
 // ============================================================
 function renderSolicitarCobro(el){
-const mesas=getMesas().filter(m=>m.status==='ocupada');
+const mesas=getMesas().filter(m=>m.status==='ocupada'||m.status==='cuenta');
 el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Solicitar Cobro</h2>
 <div class="card">
 ${mesas.length===0?'<p style="opacity:.5;">No hay mesas ocupadas</p>':
 mesas.map(m=>{
 const orders=getOrders().filter(o=>o.mesa===m.id);
 let total=orders.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.price*it.qty,0),0);
+const isCuenta=m.status==='cuenta';
 return `<div class="reserva-row">
-<div><strong>Mesa ${m.id}</strong> - Total: $${total.toLocaleString()}</div>
-<button class="btn btn-sm btn-gold" onclick="alert('Cobro solicitado para Mesa ${m.id}')">Solicitar Cuenta</button>
+<div><strong>Mesa ${m.id}</strong> - Total: $${total.toLocaleString()} ${isCuenta?'<span style="color:var(--gold);font-weight:700;">(Cuenta solicitada)</span>':''}</div>
+${!isCuenta?`<button class="btn btn-sm btn-gold" onclick="solicitarCuenta(${m.id})">Solicitar Cuenta</button>`:`<span style="color:var(--gold);font-size:.85rem;font-weight:700;">Esperando cobro...</span>`}
 </div>`;
 }).join('')}
 </div>`;
+}
+
+function solicitarCuenta(mesaId){
+const mesas=getMesas();
+const m=mesas.find(x=>x.id===mesaId);
+if(m){
+m.status='cuenta';
+setMesas(mesas);
+}
+renderCurrentTab();
 }
 
 // ============================================================
 // COBROS (Admin)
 // ============================================================
 function renderCobros(el){
-const mesas=getMesas().filter(m=>m.status==='ocupada');
+const mesas=getMesas().filter(m=>m.status==='ocupada'||m.status==='cuenta');
+// Sort: cuenta first
+const sorted=[...mesas].sort((a,b)=>{
+if(a.status==='cuenta'&&b.status!=='cuenta') return -1;
+if(a.status!=='cuenta'&&b.status==='cuenta') return 1;
+return a.id-b.id;
+});
 el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Cobros</h2>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;">
-${mesas.length===0?'<div class="card"><p style="opacity:.5;">No hay mesas para cobrar</p></div>':
-mesas.map(m=>`<div class="card" style="cursor:pointer;text-align:center;" onclick="openCobro(${m.id})">
+${sorted.length===0?'<div class="card"><p style="opacity:.5;">No hay mesas para cobrar</p></div>':
+sorted.map(m=>{
+const isCuenta=m.status==='cuenta';
+return `<div class="card${isCuenta?' card-gold':''}" style="cursor:pointer;text-align:center;${isCuenta?'animation:blink-cuenta 1s infinite;':''}" onclick="openCobro(${m.id})">
 <div style="font-size:1.3rem;font-weight:700;color:var(--gold);">Mesa ${m.id}</div>
-<div style="font-size:.82rem;opacity:.6;">Click para cobrar</div>
-</div>`).join('')}
+<div style="font-size:.82rem;${isCuenta?'color:var(--gold);font-weight:700;':'opacity:.6;'}">${isCuenta?'CUENTA SOLICITADA':'Click para cobrar'}</div>
+</div>`;
+}).join('')}
 </div>
 <div id="cobroDetail"></div>`;
 }
@@ -897,10 +1172,8 @@ document.getElementById('cobroTotalDisplay').textContent='Total: $'+final.toLoca
 }
 
 function cerrarCobro(mesaId){
-// Remove orders for this mesa
 const orders=getOrders().filter(o=>o.mesa!==mesaId);
 setOrders(orders);
-// Free mesa
 const mesas=getMesas();const m=mesas.find(x=>x.id===mesaId);
 if(m){m.status='libre';m.pedidos=[];}
 setMesas(mesas);
@@ -950,9 +1223,7 @@ ninos:document.getElementById('crNinos').value==='si',
 celiacos:document.getElementById('crCeliacos').value==='si',
 notas:document.getElementById('crNotas').value,
 };
-// Save locally too
 const reservas=getReservas();reservas.push(data);setReservas(reservas);
-// Open WA
 const text=encodeURIComponent(
 `🐉 *RESERVA - El Dragon Rojo*\n👤 Nombre: ${data.nombre}\n📱 Tel: ${data.telefono}\n👥 Personas: ${data.personas}\n👶 Niños: ${data.ninos?'Si':'No'}\n🌾 Celiacos: ${data.celiacos?'Si':'No'}\n🪑 Mesa: ${data.mesa}\n🕐 Horario: ${data.horario}\n📝 Notas: ${data.notas||'Ninguna'}`
 );
@@ -971,11 +1242,12 @@ document.getElementById('modalOverlay').classList.remove('show');
 }
 
 // ============================================================
-// AUTO REFRESH for Cocina/Barra
+// AUTO REFRESH for Cocina/Barra/Mozo Mis Mesas
 // ============================================================
 setInterval(()=>{
-if(currentTab==='Pantalla Cocina'||currentTab==='Pantalla Barra'){
+if(currentTab==='Pantalla Cocina'||currentTab==='Pantalla Barra'||currentTab==='Mis Mesas'){
 renderCurrentTab();
+if(currentRole==='mozo') updateMozoTabLabel();
 }
 },5000);
 </script>
