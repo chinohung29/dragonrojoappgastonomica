@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Dragon Rojo - Sistema Gastronomico</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+--bg:#050505;--surface:rgba(17,17,17,.94);--red:#D40000;--red-dark:#6E0000;
+--gold:#EBC06D;--cream:#F5E8D0;--green:#0f8f36;--radius:20px;
+}
+body{
+font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--cream);
+min-height:100vh;
+background:radial-gradient(ellipse at 50% 0%,rgba(110,0,0,.35) 0%,var(--bg) 70%);
+}
+/* Scrollbar */
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--red-dark);border-radius:4px;}
+
+/* BUTTONS */
+.btn{
+padding:10px 22px;border:1.5px solid var(--gold);border-radius:12px;
+background:linear-gradient(135deg,var(--red-dark),var(--red));
+color:var(--cream);font-weight:700;cursor:pointer;font-size:.95rem;
+transition:all .2s;
+}
+.btn:hover{filter:brightness(1.15);transform:translateY(-1px);}
+.btn-sm{padding:6px 14px;font-size:.82rem;border-radius:8px;}
+.btn-green{background:linear-gradient(135deg,#064d1c,var(--green));}
+.btn-gold{background:linear-gradient(135deg,#8a6d2e,var(--gold));color:#111;}
+.btn-outline{background:transparent;color:var(--gold);}
+
+/* CARDS */
+.card{
+background:var(--surface);border:1px solid rgba(235,192,109,.25);
+border-radius:var(--radius);padding:20px;
+}
+.card-gold{border-color:var(--gold);}
+
+/* INPUTS */
+input,select,textarea{
+background:rgba(30,30,30,.9);border:1px solid rgba(235,192,109,.3);
+border-radius:10px;padding:10px 14px;color:var(--cream);font-size:.95rem;
+width:100%;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);}
+select option{background:#111;color:var(--cream);}
+label{font-size:.85rem;color:var(--gold);margin-bottom:4px;display:block;}
+
+/* HEADER */
+.header{
+background:var(--surface);border-bottom:1px solid rgba(235,192,109,.2);
+padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
+position:sticky;top:0;z-index:100;
+}
+.header h1{font-size:1.3rem;color:var(--gold);}
+.header .role-badge{
+font-size:.75rem;background:var(--red-dark);padding:4px 12px;
+border-radius:20px;border:1px solid var(--red);
+}
+
+/* TABS */
+.tabs{
+display:flex;gap:6px;padding:12px 24px;flex-wrap:wrap;
+border-bottom:1px solid rgba(235,192,109,.1);background:rgba(10,10,10,.8);
+}
+.tab{
+padding:8px 18px;border-radius:10px;cursor:pointer;font-size:.88rem;
+background:transparent;color:rgba(245,232,208,.5);border:1px solid transparent;
+transition:all .2s;
+}
+.tab:hover{color:var(--cream);}
+.tab.active{
+background:linear-gradient(135deg,var(--red-dark),var(--red));
+color:var(--cream);border-color:var(--gold);
+}
+
+/* MAIN */
+.main{padding:20px 24px;}
+.section{display:none;}
+.section.active{display:block;}
+
+/* LOGIN */
+.login-wrap{
+display:flex;align-items:center;justify-content:center;min-height:100vh;
+}
+.login-card{
+width:380px;max-width:95vw;text-align:center;
+}
+.login-card h1{font-size:2rem;color:var(--gold);margin-bottom:6px;}
+.login-card p{color:rgba(245,232,208,.5);margin-bottom:24px;}
+.login-card .dragon-icon{font-size:4rem;margin-bottom:10px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.role-btn{
+padding:14px;border-radius:14px;cursor:pointer;text-align:center;
+background:var(--surface);border:1.5px solid rgba(235,192,109,.2);
+color:var(--cream);transition:all .2s;
+}
+.role-btn:hover,.role-btn.sel{border-color:var(--gold);background:rgba(212,0,0,.15);}
+.role-btn .ri{font-size:1.5rem;display:block;margin-bottom:4px;}
+
+/* MESAS GRID */
+.mesas-grid{
+display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;
+}
+.mesa-cell{
+aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;
+align-items:center;justify-content:center;cursor:pointer;font-weight:700;
+border:2px solid rgba(235,192,109,.2);transition:all .2s;font-size:.9rem;
+}
+.mesa-cell.libre{background:rgba(15,143,54,.2);border-color:var(--green);}
+.mesa-cell.ocupada{background:rgba(212,0,0,.2);border-color:var(--red);}
+.mesa-cell:hover{transform:scale(1.05);}
+.mesa-cell .mn{font-size:1.1rem;}
+.mesa-cell .ms{font-size:.65rem;margin-top:2px;opacity:.7;}
+
+/* ORDER CARDS */
+.order-card{
+margin-bottom:12px;padding:16px;border-left:4px solid var(--gold);
+}
+.order-card.nuevo{border-left-color:var(--red);}
+.order-card.preparando{border-left-color:#e89b00;}
+.order-card.listo{border-left-color:var(--green);}
+.order-card .oc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.order-card .oc-mesa{font-size:1.1rem;font-weight:700;color:var(--gold);}
+.order-card .oc-time{font-size:.78rem;opacity:.6;}
+.order-card .oc-items{margin:8px 0;}
+.order-card .oc-item{padding:3px 0;font-size:.9rem;}
+.order-card .oc-status{
+display:inline-block;padding:4px 12px;border-radius:8px;font-size:.78rem;font-weight:700;
+}
+.status-nuevo{background:rgba(212,0,0,.3);color:#ff6b6b;}
+.status-preparando{background:rgba(232,155,0,.3);color:#ffc107;}
+.status-listo{background:rgba(15,143,54,.3);color:#4caf50;}
+.status-entregado{background:rgba(100,100,100,.3);color:#aaa;}
+
+/* MENU GRID */
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.menu-item{overflow:hidden;}
+.menu-item img{width:100%;height:160px;object-fit:cover;border-radius:14px 14px 0 0;margin:-20px -20px 12px;width:calc(100% + 40px);}
+.menu-item .mi-cat{font-size:.72rem;color:var(--red);text-transform:uppercase;letter-spacing:1px;}
+.menu-item .mi-name{font-size:1.05rem;font-weight:700;margin:4px 0;}
+.menu-item .mi-price{color:var(--gold);font-size:1.1rem;font-weight:700;}
+
+/* MODAL */
+.modal-overlay{
+position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;
+display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal{
+background:#111;border:1px solid var(--gold);border-radius:var(--radius);
+padding:28px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;
+}
+.modal h2{color:var(--gold);margin-bottom:16px;font-size:1.2rem;}
+.modal .close-modal{
+float:right;background:none;border:none;color:var(--cream);
+font-size:1.4rem;cursor:pointer;
+}
+
+/* COBRO */
+.cobro-table{width:100%;border-collapse:collapse;margin:12px 0;}
+.cobro-table th,.cobro-table td{padding:8px 12px;text-align:left;border-bottom:1px solid rgba(235,192,109,.1);}
+.cobro-table th{color:var(--gold);font-size:.82rem;}
+.cobro-total{font-size:1.4rem;color:var(--gold);font-weight:700;text-align:right;margin:12px 0;}
+
+/* RESERVAS */
+.reserva-row{
+display:flex;justify-content:space-between;align-items:center;
+padding:12px;border-bottom:1px solid rgba(235,192,109,.1);
+}
+.reserva-row:last-child{border:none;}
+
+/* QTY CONTROL */
+.qty{display:flex;align-items:center;gap:8px;}
+.qty button{
+width:30px;height:30px;border-radius:50%;border:1px solid var(--gold);
+background:var(--surface);color:var(--cream);cursor:pointer;font-size:1rem;
+display:flex;align-items:center;justify-content:center;
+}
+.qty span{min-width:20px;text-align:center;}
+
+/* PROMO CARD */
+.promo-card{position:relative;overflow:hidden;}
+.promo-badge{
+position:absolute;top:12px;right:12px;background:var(--red);
+padding:4px 12px;border-radius:8px;font-weight:700;font-size:.85rem;
+}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+.mesas-grid{grid-template-columns:repeat(5,1fr);gap:6px;}
+.mesa-cell{font-size:.75rem;border-radius:10px;}
+.menu-grid{grid-template-columns:1fr;}
+.role-grid{grid-template-columns:1fr 1fr;}
+.tabs{gap:4px;padding:10px 12px;}
+.tab{padding:6px 12px;font-size:.8rem;}
+.main{padding:14px 12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginScreen" class="login-wrap">
+<div class="login-card card card-gold">
+<div class="dragon-icon">&#128009;</div>
+<h1>El Dragon Rojo</h1>
+<p>Sistema Gastronomico</p>
+<div class="role-grid">
+<div class="role-btn" data-role="admin" onclick="selectRole('admin')">
+<span class="ri">&#128119;</span>Admin
+</div>
+<div class="role-btn" data-role="mozo" onclick="selectRole('mozo')">
+<span class="ri">&#128116;</span>Mozo
+</div>
+<div class="role-btn" data-role="cocina" onclick="selectRole('cocina')">
+<span class="ri">&#127859;</span>Cocina
+</div>
+<div class="role-btn" data-role="barra" onclick="selectRole('barra')">
+<span class="ri">&#127864;</span>Barra
+</div>
+<div class="role-btn" data-role="cliente" onclick="selectRole('cliente')" style="grid-column:span 2">
+<span class="ri">&#128100;</span>Cliente
+</div>
+</div>
+<div id="pinWrap" style="display:none;margin-bottom:16px;">
+<label>PIN de acceso</label>
+<input type="password" id="pinInput" maxlength="4" placeholder="****" style="text-align:center;font-size:1.4rem;letter-spacing:8px;">
+</div>
+<button class="btn" onclick="doLogin()" style="width:100%;">Ingresar</button>
+<p id="loginError" style="color:var(--red);margin-top:10px;font-size:.85rem;display:none;">PIN incorrecto</p>
+</div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="appScreen" style="display:none;">
+<div class="header">
+<h1>&#128009; El Dragon Rojo</h1>
+<div style="display:flex;align-items:center;gap:12px;">
+<span class="role-badge" id="roleBadge"></span>
+<button class="btn btn-sm btn-outline" onclick="logout()">Salir</button>
+</div>
+</div>
+<div class="tabs" id="tabsBar"></div>
+<div class="main" id="mainContent"></div>
+</div>
+
+<!-- ========== MODAL ========== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ============================================================
+// DATA & STATE
+// ============================================================
+const PINS = {admin:'1234',mozo:'0000',cocina:'5555',barra:'6666',cliente:null};
+const WA_NUMBER = '5491173652677';
+const HORARIOS = ['19:00','19:30','20:00','20:30','21:00','21:30'];
+
+const FOOD_CATS = ['Entradas','Platos principales','Pastas','Mariscos','Postres'];
+const DRINK_CATS = ['Bebidas sin alcohol','Cervezas','Vinos','Cocteleria'];
+const ALL_CATS = [...FOOD_CATS,...DRINK_CATS];
+
+const MENU_DATA = [
+{cat:'Entradas',name:'Rabas crocantes',price:6900,img:'https://images.unsplash.com/photo-1604909052743-94e838986d24?w=500',desc:'Calamares rebozados crocantes con limon'},
+{cat:'Entradas',name:'Empanadas x6',price:5400,img:'https://images.unsplash.com/photo-1564894809611-1742fc40ed80?w=500',desc:'Seis empanadas caseras surtidas'},
+{cat:'Entradas',name:'Tabla de quesos',price:7200,img:'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=500',desc:'Seleccion de quesos artesanales con frutos secos'},
+{cat:'Platos principales',name:'Ramen del Dragon',price:9800,img:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500',desc:'Ramen picante con cerdo, huevo y verduras'},
+{cat:'Platos principales',name:'Bife sellado al fuego rojo',price:13200,img:'https://images.unsplash.com/photo-1558030006-450675393462?w=500',desc:'Corte premium sellado a la parrilla'},
+{cat:'Platos principales',name:'Pollo Kung Pao',price:8900,img:'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=500',desc:'Pollo salteado con mani, aji y vegetales'},
+{cat:'Platos principales',name:'Pato Pekin',price:14500,img:'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=500',desc:'Pato laqueado estilo Pekin con crepes'},
+{cat:'Pastas',name:'Sorrentinos de calabaza',price:8900,img:'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=500',desc:'Sorrentinos rellenos con salsa de salvia'},
+{cat:'Pastas',name:'Fideos al wok',price:7800,img:'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500',desc:'Fideos de arroz salteados con vegetales'},
+{cat:'Mariscos',name:'Camarones al ajo',price:11500,img:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500',desc:'Camarones salteados en manteca de ajo'},
+{cat:'Mariscos',name:'Pescado frito canton',price:10200,img:'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=500',desc:'Filete crocante con salsa agridulce'},
+{cat:'Postres',name:'Volcan de chocolate',price:5200,img:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=500',desc:'Bizcocho tibio con centro fundido'},
+{cat:'Postres',name:'Helado frito',price:4800,img:'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=500',desc:'Helado rebozado y frito con caramelo'},
+{cat:'Bebidas sin alcohol',name:'Limonada imperial',price:3100,img:'https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=500',desc:'Limonada con jengibre y menta fresca'},
+{cat:'Bebidas sin alcohol',name:'Te de jazmin',price:2200,img:'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500',desc:'Te verde con flores de jazmin'},
+{cat:'Cervezas',name:'Cerveza roja artesanal',price:3900,img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=500',desc:'Cerveza roja de malteria local'},
+{cat:'Cervezas',name:'Cerveza rubia tirada',price:3200,img:'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=500',desc:'Cerveza rubia de barril bien fria'},
+{cat:'Vinos',name:'Malbec reserva',price:8500,img:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=500',desc:'Malbec reserva de Mendoza'},
+{cat:'Vinos',name:'Torrontes',price:6200,img:'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=500',desc:'Torrontes fresco y aromatico'},
+{cat:'Cocteleria',name:'Negroni Dragon',price:6200,img:'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500',desc:'Negroni clasico con toque de la casa'},
+{cat:'Cocteleria',name:'Mojito',price:5800,img:'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=500',desc:'Mojito cubano con ron, lima y menta'},
+];
+
+let currentRole = null;
+let currentTab = null;
+
+// LocalStorage helpers
+function lsGet(k,def){try{const v=localStorage.getItem('dr_'+k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function lsSet(k,v){localStorage.setItem('dr_'+k,JSON.stringify(v));}
+
+// Init mesas
+function initMesas(){
+if(!lsGet('mesas',null)){
+const m=[];for(let i=1;i<=30;i++)m.push({id:i,status:'libre',pedidos:[]});
+lsSet('mesas',m);
+}
+}
+function getMesas(){return lsGet('mesas',[]);}
+function setMesas(m){lsSet('mesas',m);bc.postMessage({type:'mesas'});}
+
+// Orders
+function getOrders(){return lsGet('orders',[]);}
+function setOrders(o){lsSet('orders',o);bc.postMessage({type:'orders'});}
+function addOrder(order){const o=getOrders();o.unshift(order);setOrders(o);}
+
+// Reservas
+function getReservas(){return lsGet('reservas',[]);}
+function setReservas(r){lsSet('reservas',r);bc.postMessage({type:'reservas'});}
+
+// Promos
+function getPromos(){return lsGet('promos',[]);}
+function setPromos(p){lsSet('promos',p);bc.postMessage({type:'promos'});}
+
+// BroadcastChannel
+const bc = new BroadcastChannel('dragon_rojo_sync');
+bc.onmessage = (e) => {
+if(currentTab) renderCurrentTab();
+};
+window.addEventListener('storage',(e)=>{
+if(e.key && e.key.startsWith('dr_') && currentTab) renderCurrentTab();
+});
+
+// Audio beep
+function playBeep(){
+try{
+const ctx=new(window.AudioContext||window.webkitAudioContext)();
+const osc=ctx.createOscillator();const gain=ctx.createGain();
+osc.connect(gain);gain.connect(ctx.destination);
+osc.frequency.value=880;osc.type='square';
+gain.gain.setValueAtTime(0.3,ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);
+}catch(e){}
+}
+
+initMesas();
+
+// ============================================================
+// LOGIN
+// ============================================================
+let selectedRole = null;
+
+function selectRole(role){
+selectedRole = role;
+document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
+document.querySelector(`.role-btn[data-role="${role}"]`).classList.add('sel');
+const pw = document.getElementById('pinWrap');
+const pi = document.getElementById('pinInput');
+if(role==='cliente'){pw.style.display='none';pi.value='';}
+else{pw.style.display='block';pi.value='';pi.focus();}
+document.getElementById('loginError').style.display='none';
+}
+
+function doLogin(){
+if(!selectedRole){alert('Selecciona un rol');return;}
+if(selectedRole==='cliente'){
+currentRole='cliente';startApp();return;
+}
+const pin = document.getElementById('pinInput').value;
+if(pin===PINS[selectedRole]){
+currentRole=selectedRole;startApp();
+}else{
+document.getElementById('loginError').style.display='block';
+}
+}
+document.getElementById('pinInput').addEventListener('keydown',(e)=>{if(e.key==='Enter')doLogin();});
+
+function logout(){
+currentRole=null;currentTab=null;
+document.getElementById('appScreen').style.display='none';
+document.getElementById('loginScreen').style.display='flex';
+document.getElementById('pinInput').value='';
+document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
+document.getElementById('pinWrap').style.display='none';
+selectedRole=null;
+}
+
+// ============================================================
+// APP INIT
+// ============================================================
+const ROLE_TABS = {
+admin:['Mapa de Mesas','Reservas','Carta Digital','Promos del Dia','Pedidos','Cobros','Pantalla Cocina','Pantalla Barra'],
+mozo:['Mapa de Mesas','Tomar Pedido','Ver Pedidos','Solicitar Cobro'],
+cocina:['Pantalla Cocina'],
+barra:['Pantalla Barra'],
+cliente:['Carta Digital','Promos del Dia','Hacer Reserva'],
+};
+
+function startApp(){
+document.getElementById('loginScreen').style.display='none';
+document.getElementById('appScreen').style.display='block';
+document.getElementById('roleBadge').textContent=currentRole.toUpperCase();
+renderTabs();
+switchTab(ROLE_TABS[currentRole][0]);
+}
+
+function renderTabs(){
+const bar=document.getElementById('tabsBar');
+bar.innerHTML=ROLE_TABS[currentRole].map(t=>
+`<div class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${t}</div>`
+).join('');
+}
+
+function switchTab(t){
+currentTab=t;renderTabs();renderCurrentTab();
+}
+
+function renderCurrentTab(){
+const main=document.getElementById('mainContent');
+switch(currentTab){
+case 'Mapa de Mesas':renderMesas(main);break;
+case 'Reservas':renderReservas(main);break;
+case 'Carta Digital':renderCarta(main);break;
+case 'Promos del Dia':renderPromos(main);break;
+case 'Pedidos':renderPedidos(main);break;
+case 'Cobros':renderCobros(main);break;
+case 'Pantalla Cocina':renderCocina(main);break;
+case 'Pantalla Barra':renderBarra(main);break;
+case 'Tomar Pedido':renderTomarPedido(main);break;
+case 'Ver Pedidos':renderVerPedidos(main);break;
+case 'Solicitar Cobro':renderSolicitarCobro(main);break;
+case 'Hacer Reserva':renderHacerReserva(main);break;
+}
+}
+
+// ============================================================
+// MAPA DE MESAS
+// ============================================================
+function renderMesas(el){
+const mesas=getMesas();
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Mapa de Mesas</h2>
+<div style="display:flex;gap:16px;margin-bottom:16px;">
+<span style="font-size:.85rem;">&#128994; Libre: ${mesas.filter(m=>m.status==='libre').length}</span>
+<span style="font-size:.85rem;">&#128308; Ocupada: ${mesas.filter(m=>m.status==='ocupada').length}</span>
+</div>
+<div class="mesas-grid">${mesas.map(m=>
+`<div class="mesa-cell ${m.status}" onclick="toggleMesa(${m.id})">
+<span class="mn">${m.id}</span>
+<span class="ms">${m.status==='libre'?'Libre':'Ocup.'}</span>
+</div>`).join('')}</div>
+<div id="mesaDetail" style="margin-top:20px;"></div>`;
+}
+
+function toggleMesa(id){
+const mesas=getMesas();
+const m=mesas.find(x=>x.id===id);
+if(m.status==='libre'){m.status='ocupada';}
+else{
+// Show detail instead of toggling if admin
+if(currentRole==='admin'){showMesaDetail(id);return;}
+m.status='libre';m.pedidos=[];
+}
+setMesas(mesas);renderCurrentTab();
+}
+
+function showMesaDetail(id){
+const mesas=getMesas();const m=mesas.find(x=>x.id===id);
+const orders=getOrders().filter(o=>o.mesa===id);
+const det=document.getElementById('mesaDetail');
+let total=0;
+let itemsHtml=orders.map(o=>{
+return o.items.map(it=>{total+=it.price*it.qty;return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.9rem;"><span>${it.qty}x ${it.name}</span><span>$${(it.price*it.qty).toLocaleString()}</span></div>`;}).join('');
+}).join('');
+det.innerHTML=`<div class="card card-gold">
+<h3 style="color:var(--gold);margin-bottom:12px;">Mesa ${id} - ${m.status.toUpperCase()}</h3>
+${orders.length?`<div>${itemsHtml}</div><div style="text-align:right;margin-top:8px;font-size:1.2rem;color:var(--gold);font-weight:700;">Total: $${total.toLocaleString()}</div>`:'<p style="opacity:.5;">Sin pedidos</p>'}
+<div style="margin-top:14px;display:flex;gap:8px;">
+<button class="btn btn-sm ${m.status==='libre'?'':'btn-green'}" onclick="setMesaStatus(${id},'${m.status==='libre'?'ocupada':'libre'}')">${m.status==='libre'?'Marcar Ocupada':'Liberar Mesa'}</button>
+</div>
+</div>`;
+}
+
+function setMesaStatus(id,status){
+const mesas=getMesas();const m=mesas.find(x=>x.id===id);
+m.status=status;if(status==='libre')m.pedidos=[];
+setMesas(mesas);renderCurrentTab();
+}
+
+// ============================================================
+// RESERVAS
+// ============================================================
+function renderReservas(el){
+const reservas=getReservas();
+el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+<h2 style="color:var(--gold);">Reservas</h2>
+<button class="btn btn-sm" onclick="openReservaForm()">+ Nueva Reserva</button>
+</div>
+<div class="card">${reservas.length===0?'<p style="opacity:.5;">No hay reservas</p>':
+reservas.map((r,i)=>`<div class="reserva-row">
+<div>
+<strong>${r.nombre}</strong> - ${r.personas} pers. - Mesa ${r.mesa} - ${r.horario}<br>
+<span style="font-size:.82rem;opacity:.6;">Tel: ${r.telefono} | Ninos: ${r.ninos?'Si':'No'} | Celiacos: ${r.celiacos?'Si':'No'}${r.notas?' | '+r.notas:''}</span>
+</div>
+<div style="display:flex;gap:6px;">
+<button class="btn btn-sm btn-gold" onclick="sendReservaWA(${i})">WhatsApp</button>
+<button class="btn btn-sm btn-outline" onclick="editReserva(${i})">Editar</button>
+<button class="btn btn-sm" onclick="cancelReserva(${i})">Cancelar</button>
+</div>
+</div>`).join('')}</div>`;
+}
+
+function openReservaForm(idx){
+const r = idx!==undefined ? getReservas()[idx] : null;
+const mesasOpts = Array.from({length:30},(_,i)=>`<option value="${i+1}" ${r&&r.mesa==i+1?'selected':''}>${i+1}</option>`).join('');
+const horariosOpts = HORARIOS.map(h=>`<option value="${h}" ${r&&r.horario===h?'selected':''}>${h}</option>`).join('');
+openModal(`<h2>${r?'Editar':'Nueva'} Reserva</h2>
+<div style="display:grid;gap:12px;">
+<div><label>Nombre</label><input id="rNombre" value="${r?r.nombre:''}"></div>
+<div><label>Telefono</label><input id="rTel" value="${r?r.telefono:''}"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div><label>Personas</label><input type="number" id="rPersonas" min="1" value="${r?r.personas:'2'}"></div>
+<div><label>Mesa</label><select id="rMesa">${mesasOpts}</select></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+<div><label>Horario</label><select id="rHorario">${horariosOpts}</select></div>
+<div><label>Ninos</label><select id="rNinos"><option value="no" ${r&&r.ninos?'':'selected'}>No</option><option value="si" ${r&&r.ninos?'selected':''}>Si</option></select></div>
+<div><label>Celiacos</label><select id="rCeliacos"><option value="no" ${r&&r.celiacos?'':'selected'}>No</option><option value="si" ${r&&r.celiacos?'selected':''}>Si</option></select></div>
+</div>
+<div><label>Notas</label><textarea id="rNotas" rows="2">${r?r.notas:''}</textarea></div>
+<button class="btn" onclick="saveReserva(${idx!==undefined?idx:-1})">Guardar Reserva</button>
+</div>`);
+}
+
+function saveReserva(idx){
+const r={
+nombre:document.getElementById('rNombre').value,
+telefono:document.getElementById('rTel').value,
+personas:document.getElementById('rPersonas').value,
+mesa:document.getElementById('rMesa').value,
+horario:document.getElementById('rHorario').value,
+ninos:document.getElementById('rNinos').value==='si',
+celiacos:document.getElementById('rCeliacos').value==='si',
+notas:document.getElementById('rNotas').value,
+};
+if(!r.nombre||!r.telefono){alert('Completa nombre y telefono');return;}
+const reservas=getReservas();
+if(idx>=0)reservas[idx]=r;else reservas.push(r);
+setReservas(reservas);closeModal();renderCurrentTab();
+}
+
+function editReserva(i){openReservaForm(i);}
+function cancelReserva(i){
+if(!confirm('Cancelar esta reserva?'))return;
+const r=getReservas();r.splice(i,1);setReservas(r);renderCurrentTab();
+}
+
+function sendReservaWA(i){
+const r=getReservas()[i];
+const text=encodeURIComponent(
+`🐉 *RESERVA - El Dragon Rojo*\n👤 Nombre: ${r.nombre}\n📱 Tel: ${r.telefono}\n👥 Personas: ${r.personas}\n👶 Niños: ${r.ninos?'Si':'No'}\n🌾 Celiacos: ${r.celiacos?'Si':'No'}\n🪑 Mesa: ${r.mesa}\n🕐 Horario: ${r.horario}\n📝 Notas: ${r.notas||'Ninguna'}`
+);
+window.open(`https://wa.me/${WA_NUMBER}?text=${text}`,'_blank');
+}
+
+// ============================================================
+// CARTA DIGITAL
+// ============================================================
+function renderCarta(el){
+const isAdmin = currentRole==='admin';
+let html=`<h2 style="color:var(--gold);margin-bottom:20px;">Carta Digital</h2>`;
+// Category filter
+html+=`<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+<button class="btn btn-sm btn-gold" onclick="filterCarta('all')">Todos</button>
+${ALL_CATS.map(c=>`<button class="btn btn-sm btn-outline" onclick="filterCarta('${c}')">${c}</button>`).join('')}
+</div>`;
+html+=`<div class="menu-grid" id="cartaGrid">`;
+MENU_DATA.forEach(item=>{
+html+=`<div class="card menu-item" data-cat="${item.cat}">
+<img src="${item.img}" alt="${item.name}" loading="lazy" onerror="this.style.display='none'">
+<div class="mi-cat">${item.cat}</div>
+<div class="mi-name">${item.name}</div>
+<p style="font-size:.82rem;opacity:.6;margin:4px 0;">${item.desc}</p>
+<div class="mi-price">$${item.price.toLocaleString()}</div>
+</div>`;
+});
+html+=`</div>`;
+el.innerHTML=html;
+}
+
+function filterCarta(cat){
+document.querySelectorAll('#cartaGrid .menu-item').forEach(el=>{
+el.style.display=(cat==='all'||el.dataset.cat===cat)?'block':'none';
+});
+}
+
+// ============================================================
+// PROMOS DEL DIA
+// ============================================================
+function renderPromos(el){
+const promos=getPromos();
+const isAdmin=currentRole==='admin';
+let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+<h2 style="color:var(--gold);">Promos del Dia</h2>
+${isAdmin?'<button class="btn btn-sm" onclick="openPromoForm()">+ Nueva Promo</button>':''}
+</div>`;
+if(promos.length===0){
+html+=`<div class="card"><p style="opacity:.5;">No hay promos activas</p></div>`;
+}else{
+html+=`<div class="menu-grid">${promos.map((p,i)=>{
+const item=MENU_DATA.find(m=>m.name===p.item);
+const discounted=item?Math.round(item.price*(1-p.discount/100)):0;
+return `<div class="card promo-card">
+${item?`<img src="${item.img}" alt="${p.item}" loading="lazy" style="width:calc(100%+40px);height:140px;object-fit:cover;border-radius:14px 14px 0 0;margin:-20px -20px 12px;" onerror="this.style.display='none'">`:''}
+<div class="promo-badge">-${p.discount}%</div>
+<div class="mi-name">${p.item}</div>
+<p style="font-size:.85rem;margin:4px 0;">${p.description||''}</p>
+${item?`<div style="display:flex;gap:12px;align-items:center;">
+<span style="text-decoration:line-through;opacity:.5;">$${item.price.toLocaleString()}</span>
+<span class="mi-price">$${discounted.toLocaleString()}</span>
+</div>`:''}
+${isAdmin?`<button class="btn btn-sm" style="margin-top:10px;" onclick="deletePromo(${i})">Eliminar</button>`:''}
+</div>`;}).join('')}</div>`;
+}
+el.innerHTML=html;
+}
+
+function openPromoForm(){
+const opts=MENU_DATA.map(m=>`<option value="${m.name}">${m.name} ($${m.price.toLocaleString()})</option>`).join('');
+openModal(`<h2>Nueva Promo</h2>
+<div style="display:grid;gap:12px;">
+<div><label>Item del menu</label><select id="pItem">${opts}</select></div>
+<div><label>Descuento (%)</label><input type="number" id="pDiscount" min="1" max="99" value="20"></div>
+<div><label>Descripcion</label><input id="pDesc" placeholder="Ej: Solo hoy!"></div>
+<button class="btn" onclick="savePromo()">Crear Promo</button>
+</div>`);
+}
+
+function savePromo(){
+const p={item:document.getElementById('pItem').value,discount:parseInt(document.getElementById('pDiscount').value),description:document.getElementById('pDesc').value};
+const promos=getPromos();promos.push(p);setPromos(promos);
+closeModal();renderCurrentTab();
+}
+
+function deletePromo(i){
+const p=getPromos();p.splice(i,1);setPromos(p);renderCurrentTab();
+}
+
+// ============================================================
+// PEDIDOS (Admin)
+// ============================================================
+function renderPedidos(el){
+const orders=getOrders();
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Todos los Pedidos</h2>
+<div>${orders.length===0?'<div class="card"><p style="opacity:.5;">No hay pedidos</p></div>':
+orders.map((o,i)=>renderOrderCard(o,i,true)).join('')}</div>`;
+}
+
+function renderOrderCard(o,i,showControls){
+const statusClass={'Nuevo':'nuevo','En preparacion':'preparando','Listo':'listo','Entregado':'entregado'}[o.status]||'nuevo';
+return `<div class="card order-card ${statusClass}" style="margin-bottom:12px;">
+<div class="oc-header">
+<span class="oc-mesa">Mesa ${o.mesa} ${o.dest==='cocina'?'&#127859;':'&#127864;'} ${o.dest}</span>
+<span class="oc-time">${o.time}</span>
+</div>
+<div class="oc-items">${o.items.map(it=>`<div class="oc-item">${it.qty}x ${it.name} <span style="opacity:.5;">$${(it.price*it.qty).toLocaleString()}</span></div>`).join('')}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<span class="oc-status status-${statusClass}">${o.status}</span>
+${showControls?`<div style="display:flex;gap:6px;">
+${o.status==='Nuevo'?`<button class="btn btn-sm" style="background:rgba(232,155,0,.4);" onclick="changeOrderStatus(${i},'En preparacion')">Preparar</button>`:''}
+${o.status==='En preparacion'?`<button class="btn btn-sm btn-green" onclick="changeOrderStatus(${i},'Listo')">Listo</button>`:''}
+${o.status==='Listo'?`<button class="btn btn-sm btn-gold" onclick="changeOrderStatus(${i},'Entregado')">Entregado</button>`:''}
+</div>`:''}
+</div>
+</div>`;
+}
+
+function changeOrderStatus(i,status){
+const orders=getOrders();
+if(orders[i]){orders[i].status=status;setOrders(orders);renderCurrentTab();}
+}
+
+// ============================================================
+// COCINA
+// ============================================================
+let lastCocinaCount=0;
+function renderCocina(el){
+const orders=getOrders().filter(o=>o.dest==='cocina'&&o.status!=='Entregado');
+// Beep on new
+const newCount=orders.filter(o=>o.status==='Nuevo').length;
+if(currentRole==='cocina'&&newCount>lastCocinaCount)playBeep();
+lastCocinaCount=newCount;
+
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">&#127859; Pantalla Cocina</h2>
+<div>${orders.length===0?'<div class="card"><p style="opacity:.5;">Sin pedidos pendientes</p></div>':
+orders.map((o,i)=>{
+const realIdx=getOrders().indexOf(o);
+return renderOrderCard(o,realIdx,true);
+}).join('')}</div>`;
+}
+
+// ============================================================
+// BARRA
+// ============================================================
+let lastBarraCount=0;
+function renderBarra(el){
+const orders=getOrders().filter(o=>o.dest==='barra'&&o.status!=='Entregado');
+const newCount=orders.filter(o=>o.status==='Nuevo').length;
+if(currentRole==='barra'&&newCount>lastBarraCount)playBeep();
+lastBarraCount=newCount;
+
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">&#127864; Pantalla Barra</h2>
+<div>${orders.length===0?'<div class="card"><p style="opacity:.5;">Sin pedidos pendientes</p></div>':
+orders.map((o,i)=>{
+const realIdx=getOrders().indexOf(o);
+return renderOrderCard(o,realIdx,true);
+}).join('')}</div>`;
+}
+
+// ============================================================
+// TOMAR PEDIDO (Mozo)
+// ============================================================
+let pedidoCart=[];
+let pedidoMesa=1;
+
+function renderTomarPedido(el){
+const mesas=getMesas();
+const ocupadas=mesas.filter(m=>m.status==='ocupada');
+let html=`<h2 style="color:var(--gold);margin-bottom:16px;">Tomar Pedido</h2>
+<div style="display:flex;gap:12px;margin-bottom:20px;align-items:end;">
+<div style="flex:0 0 120px;"><label>Mesa</label>
+<select id="pedidoMesaSel" onchange="pedidoMesa=parseInt(this.value)">
+${mesas.map(m=>`<option value="${m.id}" ${m.id===pedidoMesa?'selected':''}>${m.id} (${m.status==='libre'?'L':'O'})</option>`).join('')}
+</select></div>
+</div>`;
+
+// Category tabs
+html+=`<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
+${ALL_CATS.map(c=>`<button class="btn btn-sm btn-outline" onclick="filterPedidoMenu('${c}')">${c}</button>`).join('')}
+</div>`;
+
+// Menu items with qty
+html+=`<div id="pedidoMenuGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">`;
+MENU_DATA.forEach((item,idx)=>{
+const inCart=pedidoCart.find(c=>c.name===item.name);
+const qty=inCart?inCart.qty:0;
+html+=`<div class="card" data-cat="${item.cat}" style="padding:14px;display:flex;align-items:center;gap:12px;">
+<img src="${item.img}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;" loading="lazy" onerror="this.style.display='none'">
+<div style="flex:1;min-width:0;">
+<div style="font-size:.9rem;font-weight:700;">${item.name}</div>
+<div style="font-size:.85rem;color:var(--gold);">$${item.price.toLocaleString()}</div>
+</div>
+<div class="qty">
+<button onclick="changePedidoQty('${item.name}',${item.price},'${item.cat}',-1)">-</button>
+<span id="qty_${idx}">${qty}</span>
+<button onclick="changePedidoQty('${item.name}',${item.price},'${item.cat}',1)">+</button>
+</div>
+</div>`;
+});
+html+=`</div>`;
+
+// Cart summary
+if(pedidoCart.length>0){
+let total=pedidoCart.reduce((s,it)=>s+it.price*it.qty,0);
+html+=`<div class="card card-gold" style="margin-top:20px;">
+<h3 style="color:var(--gold);margin-bottom:10px;">Resumen del Pedido - Mesa ${pedidoMesa}</h3>
+${pedidoCart.map(it=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.9rem;">
+<span>${it.qty}x ${it.name}</span><span>$${(it.price*it.qty).toLocaleString()}</span>
+</div>`).join('')}
+<div style="text-align:right;margin-top:8px;font-size:1.2rem;color:var(--gold);font-weight:700;">Total: $${total.toLocaleString()}</div>
+<button class="btn" style="width:100%;margin-top:12px;" onclick="enviarPedido()">Enviar Pedido</button>
+</div>`;
+}
+
+el.innerHTML=html;
+}
+
+function filterPedidoMenu(cat){
+document.querySelectorAll('#pedidoMenuGrid .card').forEach(el=>{
+el.style.display=el.dataset.cat===cat?'flex':'none';
+});
+}
+
+function changePedidoQty(name,price,cat,delta){
+let item=pedidoCart.find(c=>c.name===name);
+if(!item&&delta>0){pedidoCart.push({name,price,cat,qty:1});}
+else if(item){
+item.qty+=delta;
+if(item.qty<=0)pedidoCart=pedidoCart.filter(c=>c.name!==name);
+}
+renderCurrentTab();
+}
+
+function enviarPedido(){
+if(pedidoCart.length===0)return;
+pedidoMesa=parseInt(document.getElementById('pedidoMesaSel').value);
+const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+
+// Mark mesa as occupied
+const mesas=getMesas();const m=mesas.find(x=>x.id===pedidoMesa);
+if(m)m.status='ocupada';setMesas(mesas);
+
+// Split food/drinks
+const foodItems=pedidoCart.filter(it=>FOOD_CATS.includes(it.cat));
+const drinkItems=pedidoCart.filter(it=>DRINK_CATS.includes(it.cat));
+
+if(foodItems.length>0){
+addOrder({mesa:pedidoMesa,dest:'cocina',items:foodItems.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole});
+}
+if(drinkItems.length>0){
+addOrder({mesa:pedidoMesa,dest:'barra',items:drinkItems.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole});
+}
+
+pedidoCart=[];
+alert('Pedido enviado!');
+renderCurrentTab();
+}
+
+// ============================================================
+// VER PEDIDOS (Mozo)
+// ============================================================
+function renderVerPedidos(el){
+const orders=getOrders().filter(o=>o.mozo===currentRole);
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Mis Pedidos</h2>
+<div>${orders.length===0?'<div class="card"><p style="opacity:.5;">No has tomado pedidos aun</p></div>':
+orders.map((o,i)=>{
+const realIdx=getOrders().indexOf(o);
+return renderOrderCard(o,realIdx,false);
+}).join('')}</div>`;
+}
+
+// ============================================================
+// SOLICITAR COBRO (Mozo)
+// ============================================================
+function renderSolicitarCobro(el){
+const mesas=getMesas().filter(m=>m.status==='ocupada');
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Solicitar Cobro</h2>
+<div class="card">
+${mesas.length===0?'<p style="opacity:.5;">No hay mesas ocupadas</p>':
+mesas.map(m=>{
+const orders=getOrders().filter(o=>o.mesa===m.id);
+let total=orders.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.price*it.qty,0),0);
+return `<div class="reserva-row">
+<div><strong>Mesa ${m.id}</strong> - Total: $${total.toLocaleString()}</div>
+<button class="btn btn-sm btn-gold" onclick="alert('Cobro solicitado para Mesa ${m.id}')">Solicitar Cuenta</button>
+</div>`;
+}).join('')}
+</div>`;
+}
+
+// ============================================================
+// COBROS (Admin)
+// ============================================================
+function renderCobros(el){
+const mesas=getMesas().filter(m=>m.status==='ocupada');
+el.innerHTML=`<h2 style="color:var(--gold);margin-bottom:16px;">Cobros</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;">
+${mesas.length===0?'<div class="card"><p style="opacity:.5;">No hay mesas para cobrar</p></div>':
+mesas.map(m=>`<div class="card" style="cursor:pointer;text-align:center;" onclick="openCobro(${m.id})">
+<div style="font-size:1.3rem;font-weight:700;color:var(--gold);">Mesa ${m.id}</div>
+<div style="font-size:.82rem;opacity:.6;">Click para cobrar</div>
+</div>`).join('')}
+</div>
+<div id="cobroDetail"></div>`;
+}
+
+function openCobro(mesaId){
+const orders=getOrders().filter(o=>o.mesa===mesaId);
+let items=[];
+orders.forEach(o=>o.items.forEach(it=>{
+const existing=items.find(x=>x.name===it.name);
+if(existing)existing.qty+=it.qty;else items.push({...it});
+}));
+let total=items.reduce((s,it)=>s+it.price*it.qty,0);
+
+openModal(`<h2>Cobro - Mesa ${mesaId}</h2>
+<table class="cobro-table">
+<thead><tr><th>Item</th><th>Cant</th><th>Precio</th><th>Subtotal</th></tr></thead>
+<tbody>${items.map(it=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>$${it.price.toLocaleString()}</td><td>$${(it.price*it.qty).toLocaleString()}</td></tr>`).join('')}</tbody>
+</table>
+<div style="margin:12px 0;">
+<label>Descuento (%)</label>
+<input type="number" id="cobroDesc" min="0" max="100" value="0" onchange="updateCobroTotal(${total})">
+</div>
+<div class="cobro-total" id="cobroTotalDisplay">Total: $${total.toLocaleString()}</div>
+<div style="margin-bottom:14px;">
+<label>Metodo de pago</label>
+<select id="cobroMetodo">
+<option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Mercado Pago</option>
+</select>
+</div>
+<button class="btn btn-green" style="width:100%;" onclick="cerrarCobro(${mesaId})">Cerrar Mesa y Cobrar</button>`);
+}
+
+function updateCobroTotal(baseTotal){
+const desc=parseInt(document.getElementById('cobroDesc').value)||0;
+const final=Math.round(baseTotal*(1-desc/100));
+document.getElementById('cobroTotalDisplay').textContent='Total: $'+final.toLocaleString();
+}
+
+function cerrarCobro(mesaId){
+// Remove orders for this mesa
+const orders=getOrders().filter(o=>o.mesa!==mesaId);
+setOrders(orders);
+// Free mesa
+const mesas=getMesas();const m=mesas.find(x=>x.id===mesaId);
+if(m){m.status='libre';m.pedidos=[];}
+setMesas(mesas);
+closeModal();
+alert('Mesa '+mesaId+' cobrada y liberada');
+renderCurrentTab();
+}
+
+// ============================================================
+// HACER RESERVA (Cliente)
+// ============================================================
+function renderHacerReserva(el){
+const mesasOpts=Array.from({length:30},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+const horariosOpts=HORARIOS.map(h=>`<option value="${h}">${h}</option>`).join('');
+el.innerHTML=`<div style="max-width:500px;margin:0 auto;">
+<div class="card card-gold">
+<h2 style="color:var(--gold);margin-bottom:16px;">Hacer Reserva</h2>
+<div style="display:grid;gap:14px;">
+<div><label>Nombre</label><input id="crNombre"></div>
+<div><label>Telefono</label><input id="crTel"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div><label>Personas</label><input type="number" id="crPersonas" min="1" value="2"></div>
+<div><label>Mesa preferida</label><select id="crMesa">${mesasOpts}</select></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+<div><label>Horario</label><select id="crHorario">${horariosOpts}</select></div>
+<div><label>Ninos</label><select id="crNinos"><option value="no">No</option><option value="si">Si</option></select></div>
+<div><label>Celiacos</label><select id="crCeliacos"><option value="no">No</option><option value="si">Si</option></select></div>
+</div>
+<div><label>Notas</label><textarea id="crNotas" rows="2" placeholder="Alergias, cumpleanos, etc."></textarea></div>
+<button class="btn" onclick="enviarReservaCliente()">Enviar Reserva por WhatsApp</button>
+</div>
+</div>
+</div>`;
+}
+
+function enviarReservaCliente(){
+const nombre=document.getElementById('crNombre').value;
+const tel=document.getElementById('crTel').value;
+if(!nombre||!tel){alert('Completa nombre y telefono');return;}
+const data={
+nombre,telefono:tel,
+personas:document.getElementById('crPersonas').value,
+mesa:document.getElementById('crMesa').value,
+horario:document.getElementById('crHorario').value,
+ninos:document.getElementById('crNinos').value==='si',
+celiacos:document.getElementById('crCeliacos').value==='si',
+notas:document.getElementById('crNotas').value,
+};
+// Save locally too
+const reservas=getReservas();reservas.push(data);setReservas(reservas);
+// Open WA
+const text=encodeURIComponent(
+`🐉 *RESERVA - El Dragon Rojo*\n👤 Nombre: ${data.nombre}\n📱 Tel: ${data.telefono}\n👥 Personas: ${data.personas}\n👶 Niños: ${data.ninos?'Si':'No'}\n🌾 Celiacos: ${data.celiacos?'Si':'No'}\n🪑 Mesa: ${data.mesa}\n🕐 Horario: ${data.horario}\n📝 Notas: ${data.notas||'Ninguna'}`
+);
+window.open(`https://wa.me/${WA_NUMBER}?text=${text}`,'_blank');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(html){
+document.getElementById('modalContent').innerHTML=`<button class="close-modal" onclick="closeModal()">&times;</button>`+html;
+document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){
+document.getElementById('modalOverlay').classList.remove('show');
+}
+
+// ============================================================
+// AUTO REFRESH for Cocina/Barra
+// ============================================================
+setInterval(()=>{
+if(currentTab==='Pantalla Cocina'||currentTab==='Pantalla Barra'){
+renderCurrentTab();
+}
+},5000);
+</script>
+</body>
+</html>
