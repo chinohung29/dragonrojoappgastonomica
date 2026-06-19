@@ -122,6 +122,28 @@ label{font-size:.85rem;color:var(--gold-text);margin-bottom:4px;display:block;fo
 .delivery-banner a{color:#fff;font-weight:700;text-decoration:none}
 .cat-header{background:linear-gradient(135deg,#1a1a1a,#222);border:2px solid var(--gold);border-radius:12px;padding:14px 20px;margin:24px 0 16px;color:var(--gold);font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;display:flex;align-items:center;gap:10px;text-transform:uppercase;letter-spacing:1px}
 .cat-header:first-of-type{margin-top:0}
+.del-cart-float{position:fixed;bottom:20px;right:20px;z-index:90;background:linear-gradient(145deg,var(--red-dark),var(--red));color:#111;border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px var(--red-glow);border:2px solid var(--gold);transition:all .25s}
+.del-cart-float:hover{transform:scale(1.1);box-shadow:0 6px 30px var(--red-glow)}
+.del-cart-float .cart-count{position:absolute;top:-4px;right:-4px;background:var(--green);color:#fff;font-size:.7rem;font-weight:800;min-width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif}
+.del-item{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border);transition:background .2s}
+.del-item:last-child{border-bottom:none}
+.del-item:hover{background:var(--surface-hover)}
+.del-item img{width:50px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.del-item-info{flex:1;min-width:0}
+.del-item-name{font-weight:600;font-size:.9rem}
+.del-item-price{color:var(--red);font-weight:700;font-size:.88rem}
+.del-item-desc{font-size:.78rem;opacity:.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.del-step{display:none}.del-step.active{display:block}
+.del-summary-item{display:flex;justify-content:space-between;padding:6px 0;font-size:.9rem;border-bottom:1px solid var(--border)}
+.del-summary-item:last-child{border:none}
+.del-total{font-size:1.3rem;color:var(--red);font-weight:700;text-align:right;margin:12px 0;font-family:'Playfair Display',serif}
+.del-wa-btn{width:100%;padding:14px;font-size:1rem;background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border:2px solid #25D366;border-radius:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .25s;box-shadow:0 4px 16px rgba(37,211,102,.3)}
+.del-wa-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(37,211,102,.4);filter:brightness(1.08)}
+.del-status-badge{display:inline-block;padding:4px 12px;border-radius:8px;font-size:.75rem;font-weight:700}
+.del-status-nuevo{background:rgba(245,197,24,.2);color:#FFD700}
+.del-status-confirmado{background:rgba(37,211,102,.2);color:#25D366}
+.del-status-enviado{background:rgba(56,189,248,.2);color:#7DD3FC}
+.del-status-entregado{background:rgba(22,163,74,.2);color:#4ade80}
 @media(max-width:900px){.modal{max-width:95vw;padding:20px}.card{padding:16px}}
 @media(max-width:600px){.mesas-grid{grid-template-columns:repeat(5,1fr);gap:6px}.mesa-cell{font-size:.75rem;border-radius:10px}.menu-grid{grid-template-columns:1fr}.tabs{gap:4px;padding:10px 12px}.tab{padding:6px 12px;font-size:.8rem}.main{padding:14px 12px}.reserva-row{flex-direction:column;align-items:flex-start}}
 </style>
@@ -258,6 +280,8 @@ function getPromos(){return lsGet('promos',[])}
 function setPromos(p){lsSet('promos',p);bc.postMessage({type:'promos'})}
 function getMozoNotifs(){const n=lsGet('mozo_notifs',[]);return n.filter(x=>Date.now()-(x.createdAt||Date.now())<24*3600*1000).slice(0,50)}
 function setMozoNotifs(n){lsSet('mozo_notifs',n.slice(0,50));bc.postMessage({type:'mozo_notifs'})}
+function getDeliveryOrders(){return lsGet('delivery_orders',[])}
+function setDeliveryOrders(d){lsSet('delivery_orders',d);bc.postMessage({type:'delivery'})}
 
 const bc=new BroadcastChannel('divina_sazon_sync');
 let prevUnread=0;
@@ -283,10 +307,10 @@ document.getElementById('pinInput').addEventListener('keydown',e=>{if(e.key==='E
 function logout(){currentRole=null;currentTab=null;document.getElementById('appScreen').style.display='none';document.getElementById('loginScreen').style.display='flex';document.getElementById('pinInput').value='';document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));document.getElementById('pinWrap').style.display='none';selectedRole=null}
 
 const ROLE_TABS={
-admin:['Mapa de Mesas','Salón y Agenda','Reservas','Carta Digital','Gestión Carta','Promos del Dia','Pedidos','Cobros','Pantalla Cocina'],
+admin:['Mapa de Mesas','Salón y Agenda','Reservas','Carta Digital','Gestión Carta','Promos del Dia','Pedidos','Cobros','Pantalla Cocina','Pedidos Delivery'],
 mozo:['Mapa de Mesas','Tomar Pedido','Mis Mesas','Promos del Dia','Solicitar Cobro'],
 cocina:['Pantalla Cocina'],
-cliente:['Carta Digital','Promos del Dia','Hacer Reserva']
+cliente:['Carta Digital','Promos del Dia','Pedir Delivery','Hacer Reserva']
 };
 
 function startApp(){document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';document.getElementById('roleBadge').textContent=currentRole.toUpperCase();if(currentRole==='mozo')document.getElementById('mozoNotifBell').style.display='block';else document.getElementById('mozoNotifBell').style.display='none';renderTabs();switchTab(ROLE_TABS[currentRole][0])}
@@ -295,7 +319,7 @@ function toggleNotifPanel(){const dd=document.getElementById('notifDropdown');if
 function markAllNotifsRead(){const n=getMozoNotifs();n.forEach(x=>x.read=true);setMozoNotifs(n);document.getElementById('notifDropdown').style.display='none';renderTabs();if(currentTab==='Mis Mesas')renderCurrentTab()}
 function renderTabs(){const bar=document.getElementById('tabsBar');const unread=currentRole==='mozo'?getMozoNotifs().filter(x=>!x.read).length:0;bar.innerHTML=ROLE_TABS[currentRole].map(t=>{let badge='';if(t==='Mis Mesas'&&unread>0)badge=`<span class="notif-badge">${unread}</span>`;return`<div class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${t}${badge}</div>`}).join('');updateNotifBell()}
 function switchTab(t){currentTab=t;renderTabs();renderCurrentTab()}
-function renderCurrentTab(){const m=document.getElementById('mainContent');switch(currentTab){case'Mapa de Mesas':renderMesas(m);break;case'Salón y Agenda':renderSalon(m);break;case'Reservas':renderReservas(m);break;case'Carta Digital':renderCarta(m);break;case'Gestión Carta':renderGestion(m);break;case'Promos del Dia':renderPromos(m);break;case'Pedidos':renderPedidos(m);break;case'Cobros':renderCobros(m);break;case'Pantalla Cocina':renderCocina(m);break;case'Tomar Pedido':renderTomarPedido(m);break;case'Mis Mesas':renderMisMesas(m);break;case'Solicitar Cobro':renderSolicitarCobro(m);break;case'Hacer Reserva':renderHacerReserva(m);break}}
+function renderCurrentTab(){const m=document.getElementById('mainContent');switch(currentTab){case'Mapa de Mesas':renderMesas(m);break;case'Salón y Agenda':renderSalon(m);break;case'Reservas':renderReservas(m);break;case'Carta Digital':renderCarta(m);break;case'Gestión Carta':renderGestion(m);break;case'Promos del Dia':renderPromos(m);break;case'Pedidos':renderPedidos(m);break;case'Cobros':renderCobros(m);break;case'Pantalla Cocina':renderCocina(m);break;case'Tomar Pedido':renderTomarPedido(m);break;case'Mis Mesas':renderMisMesas(m);break;case'Solicitar Cobro':renderSolicitarCobro(m);break;case'Hacer Reserva':renderHacerReserva(m);break;case'Pedir Delivery':renderDelivery(m);break;case'Pedidos Delivery':renderDeliveryAdmin(m);break}}
 
 // MESAS
 function renderMesas(el){const mesas=getMesas();const lc=mesas.filter(m=>m.status==='libre').length;const oc=mesas.filter(m=>m.status==='ocupada').length;const cc=mesas.filter(m=>m.status==='cuenta').length;const rc=mesas.filter(m=>m.status==='reservada').length;
@@ -405,12 +429,211 @@ function autoReservarMesas(){const reservas=getReservas();const hoy=new Date().t
 function addReservaToCalendar(idx){const r=getReservas()[idx];if(!r)return;const fecha=r.fecha||new Date().toISOString().split('T')[0];const [hh,mm]=r.horario.split(':');const endH=String(parseInt(hh)+2).padStart(2,'0');const title=encodeURIComponent(`\u{1F525} Reserva: ${r.nombre} - Mesa ${r.mesa}`);const details=encodeURIComponent(`Personas: ${r.personas}\nTeléfono: ${r.telefono}\nNiños: ${r.ninos?'Sí':'No'}\nCelíacos: ${r.celiacos?'Sí':'No'}\nNotas: ${r.notas||'Ninguna'}\n\nDivina Sazón - Sistema Gastronómico`);const dates=`${fecha.replace(/-/g,'')}T${r.horario.replace(':','')}00/${fecha.replace(/-/g,'')}T${endH}${mm}00`;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=Divina+Sazon+Restaurante`,'_blank')}
 function addAllToCalendar(){const reservas=getReservas();const hoy=new Date().toISOString().split('T')[0];const todayRes=reservas.filter(r=>r.fecha===hoy||!r.fecha);if(!todayRes.length){alert('No hay reservas para hoy');return}todayRes.forEach((_,i)=>{const idx=reservas.indexOf(todayRes[i]);addReservaToCalendar(idx)});alert(todayRes.length+' reserva(s) abiertas en Google Calendar')}
 
+// DELIVERY (Cliente)
+let delCart=[],delStep=1;
+function renderDelivery(el){
+const menu=getMenu();
+const totalItems=delCart.reduce((s,it)=>s+it.qty,0);
+const totalPrice=delCart.reduce((s,it)=>s+it.price*it.qty,0);
+let h=`<h2 style="color:var(--red);margin-bottom:8px">\u{1F6F5} Pedir Delivery</h2>`;
+h+=`<div class="delivery-banner">\u{1F4DE} <strong>WhatsApp:</strong>&nbsp;<a href="https://wa.me/${WA}" target="_blank">(0412) 507.77.93</a>&nbsp;—&nbsp;Tu pedido se envía directo por WhatsApp</div>`;
+h+=`<div id="delSteps">`;
+
+// Step 1: Seleccionar productos
+h+=`<div class="del-step ${delStep===1?'active':''}" id="delStep1">`;
+h+=`<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"><button class="btn btn-sm btn-gold" onclick="filterDelMenu('all')">Todos</button>${ALL_CATS.map(c=>`<button class="btn btn-sm btn-outline" onclick="filterDelMenu('${c}')">${c}</button>`).join('')}</div>`;
+h+=`<div id="delMenuGrid">`;
+const catIcons={'Arepas $2':'\u{1FAD3}','Arepas $3':'\u{1FAD3}','Arepas Especiales':'⭐','Arepas Mixtas Especiales':'\u{1F31F}','Hallaquitas':'\u{1F33D}','Bandejas':'\u{1F356}','Bebidas':'\u{1F9C3}'};
+ALL_CATS.forEach(cat=>{
+const items=menu.filter(it=>it.cat===cat);
+if(items.length===0)return;
+h+=`<div class="del-cat-section" data-cat="${cat}"><div class="cat-header">${catIcons[cat]||'\u{1F37D}️'} ${cat}</div><div class="card" style="padding:0;overflow:hidden">`;
+items.forEach(it=>{
+const inC=delCart.find(c=>c.name===it.name);
+const q=inC?inC.qty:0;
+h+=`<div class="del-item"><img src="${it.img}" alt="${it.name}" loading="lazy" onerror="this.style.display='none'"><div class="del-item-info"><div class="del-item-name">${it.name}</div><div class="del-item-desc">${it.desc||''}</div><div class="del-item-price">$${it.price.toFixed(2)}</div></div><div class="qty"><button onclick="chDelQ('${it.name.replace(/'/g,"\\'")}',${it.price},'${it.cat}',-1)">−</button><span>${q}</span><button onclick="chDelQ('${it.name.replace(/'/g,"\\'")}',${it.price},'${it.cat}',1)">+</button></div></div>`;
+});
+h+=`</div></div>`;
+});
+h+=`</div>`;
+if(totalItems>0){
+h+=`<div style="height:80px"></div>`;
+}
+h+=`</div>`;
+
+// Step 2: Datos de entrega
+h+=`<div class="del-step ${delStep===2?'active':''}" id="delStep2">`;
+h+=`<button class="btn btn-sm btn-outline" onclick="delGoStep(1)" style="margin-bottom:16px">← Volver al menú</button>`;
+h+=`<div class="card card-gold"><h3 style="color:var(--red);margin-bottom:16px">\u{1F4CB} Resumen del Pedido</h3>`;
+h+=`<div style="margin-bottom:16px">${delCart.map(it=>`<div class="del-summary-item"><span>${it.qty}x ${it.name}</span><span style="color:var(--red);font-weight:600">$${(it.price*it.qty).toFixed(2)}</span></div>`).join('')}</div>`;
+h+=`<div class="del-total">Total: $${totalPrice.toFixed(2)}</div>`;
+h+=`</div>`;
+h+=`<div class="card card-gold" style="margin-top:16px"><h3 style="color:var(--red);margin-bottom:16px">\u{1F4CD} Datos de Entrega</h3>`;
+h+=`<div style="display:grid;gap:14px">`;
+h+=`<div><label>Nombre completo</label><input id="delNombre" placeholder="Tu nombre" value="${lsGet('del_nombre','')}"></div>`;
+h+=`<div><label>Teléfono / WhatsApp</label><input id="delTel" placeholder="0412-1234567" value="${lsGet('del_tel','')}"></div>`;
+h+=`<div><label>Dirección de entrega</label><textarea id="delDir" rows="2" placeholder="Calle, edificio/casa, piso, punto de referencia...">${lsGet('del_dir','')}</textarea></div>`;
+h+=`<div><label>Zona / Sector</label><input id="delZona" placeholder="Ej: Centro, La Candelaria..." value="${lsGet('del_zona','')}"></div>`;
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Método de Pago</label><select id="delPago"><option>Efectivo</option><option>Pago Móvil</option><option>Transferencia</option><option>Zelle</option><option>Punto de Venta</option></select></div><div><label>Hora deseada</label><select id="delHora"><option value="Lo antes posible">Lo antes posible</option><option value="En 30 min">En 30 min</option><option value="En 1 hora">En 1 hora</option><option value="En 1:30 hrs">En 1:30 hrs</option><option value="En 2 horas">En 2 horas</option></select></div></div>`;
+h+=`<div><label>Notas adicionales</label><textarea id="delNotas" rows="2" placeholder="Sin cebolla, extra salsa, timbre no funciona..."></textarea></div>`;
+h+=`</div></div>`;
+h+=`<div style="margin-top:20px"><button class="del-wa-btn" onclick="enviarDeliveryWA()"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Enviar Pedido por WhatsApp</button></div>`;
+h+=`</div>`;
+
+// Step 3: Confirmación
+h+=`<div class="del-step ${delStep===3?'active':''}" id="delStep3">`;
+h+=`<div class="card card-gold" style="text-align:center;padding:40px 24px"><div style="font-size:3rem;margin-bottom:16px">✅</div><h2 style="color:var(--green);margin-bottom:12px">¡Pedido Enviado!</h2><p style="opacity:.7;margin-bottom:20px;font-size:.95rem">Tu pedido fue enviado por WhatsApp al <strong style="color:var(--red)">(0412) 507.77.93</strong>.<br>Te confirmaremos por WhatsApp la recepción y tiempo de entrega.</p><div class="del-total" style="margin-bottom:20px">Total: $${totalPrice.toFixed(2)}</div><button class="btn btn-gold" onclick="delReset()">Hacer Otro Pedido</button></div>`;
+h+=`</div>`;
+
+h+=`</div>`;
+
+// Floating cart button (step 1 only)
+if(delStep===1&&totalItems>0){
+h+=`<div class="del-cart-float" onclick="delGoStep(2)" title="Ver carrito">\u{1F6D2}<span class="cart-count">${totalItems}</span></div>`;
+}
+el.innerHTML=h;
+}
+
+function filterDelMenu(c){document.querySelectorAll('#delMenuGrid .del-cat-section').forEach(el=>{el.style.display=(c==='all'||el.dataset.cat===c)?'block':'none'})}
+
+function chDelQ(name,price,cat,d){
+let it=delCart.find(c=>c.name===name);
+if(!it&&d>0)delCart.push({name,price,cat,qty:1});
+else if(it){it.qty+=d;if(it.qty<=0)delCart=delCart.filter(c=>c.name!==name)}
+renderCurrentTab();
+}
+
+function delGoStep(s){delStep=s;renderCurrentTab()}
+
+function enviarDeliveryWA(){
+if(delCart.length===0){alert('Agrega productos al carrito');return}
+const nombre=document.getElementById('delNombre').value.trim();
+const tel=document.getElementById('delTel').value.trim();
+const dir=document.getElementById('delDir').value.trim();
+const zona=document.getElementById('delZona').value.trim();
+const pago=document.getElementById('delPago').value;
+const hora=document.getElementById('delHora').value;
+const notas=document.getElementById('delNotas').value.trim();
+if(!nombre){alert('Ingresa tu nombre');return}
+if(!tel){alert('Ingresa tu teléfono');return}
+if(!dir){alert('Ingresa la dirección de entrega');return}
+lsSet('del_nombre',nombre);
+lsSet('del_tel',tel);
+lsSet('del_dir',dir);
+lsSet('del_zona',zona);
+const total=delCart.reduce((s,it)=>s+it.price*it.qty,0);
+const itemsText=delCart.map(it=>`  ${it.qty}x ${it.name} — $${(it.price*it.qty).toFixed(2)}`).join('\n');
+const orden={id:Date.now(),nombre,telefono:tel,direccion:dir,zona,pago,hora,notas,items:delCart.map(it=>({name:it.name,qty:it.qty,price:it.price})),total,status:'Nuevo',createdAt:Date.now()};
+const deliveries=getDeliveryOrders();
+deliveries.unshift(orden);
+setDeliveryOrders(deliveries);
+const msg=encodeURIComponent(
+`\u{1F6F5} *PEDIDO DELIVERY — DIVINA SAZÓN*\n`+
+`━━━━━━━━━━━━━━━━━━━━━━\n\n`+
+`\u{1F464} *Cliente:* ${nombre}\n`+
+`\u{1F4DE} *Teléfono:* ${tel}\n`+
+`\u{1F4CD} *Dirección:* ${dir}\n`+
+`${zona?'\u{1F3D8}️ *Zona:* '+zona+'\n':''}`+
+`\u{1F552} *Hora deseada:* ${hora}\n`+
+`\u{1F4B3} *Pago:* ${pago}\n\n`+
+`━━━━━━━━━━━━━━━━━━━━━━\n`+
+`\u{1F4CB} *PEDIDO:*\n\n`+
+`${itemsText}\n\n`+
+`━━━━━━━━━━━━━━━━━━━━━━\n`+
+`\u{1F4B0} *TOTAL: $${total.toFixed(2)}*\n`+
+`${notas?'\n\u{1F4DD} *Notas:* '+notas+'\n':''}\n`+
+`\u{1F525} ¡Gracias por tu pedido!`
+);
+window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');
+delStep=3;
+renderCurrentTab();
+}
+
+function delReset(){delCart=[];delStep=1;renderCurrentTab()}
+
+// DELIVERY ORDERS (Admin)
+function renderDeliveryAdmin(el){
+const orders=getDeliveryOrders();
+const pendientes=orders.filter(o=>o.status!=='Entregado');
+const entregados=orders.filter(o=>o.status==='Entregado').slice(0,15);
+let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px"><h2 style="color:var(--red)">\u{1F6F5} Pedidos Delivery</h2><div style="display:flex;gap:8px;align-items:center"><span style="font-size:.85rem;opacity:.6">${pendientes.length} pendiente(s)</span></div></div>`;
+if(pendientes.length===0&&entregados.length===0){
+h+=`<div class="card"><p style="opacity:.5">No hay pedidos de delivery</p></div>`;
+}
+pendientes.forEach((o,_)=>{
+const idx=orders.indexOf(o);
+const mins=Math.floor((Date.now()-o.createdAt)/60000);
+const elapsed=mins<1?'Recién':mins+'min';
+const elClass=mins<=10?'elapsed-green':mins<=25?'elapsed-amber':'elapsed-red';
+const sc=o.status.toLowerCase().replace(/\s/g,'');
+h+=`<div class="card" style="margin-bottom:14px;border-left:4px solid ${o.status==='Nuevo'?'var(--red)':o.status==='Confirmado'?'#25D366':o.status==='En camino'?'#38BDF8':'var(--green)'}">`;
+h+=`<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:8px"><div><span style="font-size:1.1rem;font-weight:700;color:var(--red);font-family:'Playfair Display',serif">\u{1F464} ${o.nombre}</span><span style="margin-left:8px;font-size:.8rem;opacity:.5">#${String(o.id).slice(-5)}</span></div><div style="display:flex;gap:6px;align-items:center"><span class="elapsed-time ${elClass}">\u{23F1} ${elapsed}</span><span class="del-status-badge del-status-${sc}">${o.status}</span></div></div>`;
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:.85rem"><div><span style="opacity:.5">\u{1F4DE}</span> <a href="https://wa.me/${o.telefono.replace(/[^0-9]/g,'')}" target="_blank" style="color:var(--gold);text-decoration:none">${o.telefono}</a></div><div><span style="opacity:.5">\u{1F4B3}</span> ${o.pago}</div><div style="grid-column:span 2"><span style="opacity:.5">\u{1F4CD}</span> ${o.direccion}${o.zona?' — '+o.zona:''}</div><div><span style="opacity:.5">\u{1F552}</span> ${o.hora}</div></div>`;
+h+=`<div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bottom:10px">${o.items.map(it=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.88rem"><span>${it.qty}x ${it.name}</span><span style="opacity:.6">$${(it.price*it.qty).toFixed(2)}</span></div>`).join('')}<div style="text-align:right;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--red);font-weight:700;font-size:1rem">Total: $${o.total.toFixed(2)}</div></div>`;
+if(o.notas){h+=`<div style="font-size:.82rem;opacity:.6;background:var(--red-subtle);padding:6px 10px;border-radius:8px;margin-bottom:10px;border-left:3px solid var(--gold)">\u{1F4DD} ${o.notas}</div>`}
+h+=`<div style="display:flex;gap:6px;flex-wrap:wrap">`;
+if(o.status==='Nuevo'){
+h+=`<button class="btn btn-sm btn-green" onclick="updateDelStatus(${idx},'Confirmado')">✅ Confirmar</button>`;
+h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${idx})">\u{1F4AC} WhatsApp</button>`;
+}
+if(o.status==='Confirmado'){
+h+=`<button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="updateDelStatus(${idx},'En camino')">\u{1F6F5} En camino</button>`;
+h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${idx})">\u{1F4AC} WhatsApp</button>`;
+}
+if(o.status==='En camino'){
+h+=`<button class="btn btn-sm btn-green" onclick="updateDelStatus(${idx},'Entregado')">\u{1F4E6} Entregado</button>`;
+h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${idx})">\u{1F4AC} WhatsApp</button>`;
+}
+h+=`<button class="btn btn-sm btn-outline" onclick="deleteDelOrder(${idx})">Eliminar</button>`;
+h+=`</div></div>`;
+});
+if(entregados.length>0){
+h+=`<h3 style="color:var(--gold);margin:24px 0 12px">Historial Reciente</h3>`;
+entregados.forEach(o=>{
+h+=`<div class="card" style="margin-bottom:8px;opacity:.55;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong style="color:var(--red)">${o.nombre}</strong> <span style="font-size:.8rem;opacity:.5">#${String(o.id).slice(-5)}</span><span style="font-size:.82rem;margin-left:8px;opacity:.6">${o.items.map(it=>it.qty+'x '+it.name).join(', ')}</span></div><div style="display:flex;gap:8px;align-items:center"><span style="font-size:.85rem;color:var(--red);font-weight:700">$${o.total.toFixed(2)}</span><span class="del-status-badge del-status-entregado">Entregado</span></div></div></div>`;
+});
+}
+el.innerHTML=h;
+}
+
+function updateDelStatus(idx,status){
+const orders=getDeliveryOrders();
+if(!orders[idx])return;
+orders[idx].status=status;
+setDeliveryOrders(orders);
+renderCurrentTab();
+}
+
+function contactarClienteWA(idx){
+const o=getDeliveryOrders()[idx];
+if(!o)return;
+const tel=o.telefono.replace(/[^0-9]/g,'');
+const telWA=tel.startsWith('0')?'58'+tel.slice(1):tel;
+const msg=encodeURIComponent(
+`\u{1F525} *DIVINA SAZÓN*\n\n`+
+`Hola ${o.nombre}, ${o.status==='Nuevo'?'hemos recibido tu pedido y lo estamos preparando.':o.status==='Confirmado'?'tu pedido está confirmado y en preparación.':'tu pedido va en camino.'}\n\n`+
+`\u{1F4CB} Pedido #${String(o.id).slice(-5)}\n`+
+`\u{1F4B0} Total: $${o.total.toFixed(2)}\n`+
+`\u{1F4B3} Pago: ${o.pago}\n\n`+
+`¡Gracias por tu preferencia! \u{1F525}`
+);
+window.open(`https://wa.me/${telWA}?text=${msg}`,'_blank');
+}
+
+function deleteDelOrder(idx){
+if(!confirm('¿Eliminar este pedido de delivery?'))return;
+const orders=getDeliveryOrders();
+orders.splice(idx,1);
+setDeliveryOrders(orders);
+renderCurrentTab();
+}
+
 // MODAL
 function openModal(html){document.getElementById('modalContent').innerHTML=`<button class="close-modal" onclick="closeModal()">&times;</button>`+html;document.getElementById('modalOverlay').classList.add('show')}
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
 
 // AUTO REFRESH
-setInterval(()=>{if(['Pantalla Cocina','Mis Mesas'].includes(currentTab))renderCurrentTab();if(currentRole==='mozo')updateNotifBell()},3000);
+setInterval(()=>{if(['Pantalla Cocina','Mis Mesas','Pedidos Delivery'].includes(currentTab))renderCurrentTab();if(currentRole==='mozo')updateNotifBell()},3000);
 </script>
 </body>
 </html>
