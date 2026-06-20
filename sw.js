@@ -1,8 +1,6 @@
-const CACHE='divina-sazon-v1';
-const ASSETS=['/','/index.html'];
+const CACHE='divina-sazon-v2';
 
 self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
@@ -15,6 +13,11 @@ self.addEventListener('activate',e=>{
 
 self.addEventListener('fetch',e=>{
   if(e.request.url.includes('supabase.co')||e.request.method!=='GET'){return}
+  const url=new URL(e.request.url);
+  if(url.pathname==='/'||url.pathname==='/index.html'){
+    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
+    return;
+  }
   e.respondWith(
     fetch(e.request).then(r=>{
       const clone=r.clone();
