@@ -458,7 +458,7 @@ function toggleNotifPanel(){const dd=document.getElementById('notifDropdown');if
 async function markAllNotifsRead(){await markAllNotifsRead_db();await reloadTable('mozo_notifs');document.getElementById('notifDropdown').style.display='none';renderTabs();if(currentTab==='Mis Mesas')renderCurrentTab()}
 function renderTabs(){const bar=document.getElementById('tabsBar');const unread=currentRole==='mozo'?getMozoNotifs().filter(x=>!x.read).length:0;bar.innerHTML=ROLE_TABS[currentRole].map(t=>{let badge='';if(t==='Mis Mesas'&&unread>0)badge=`<span class="notif-badge">${unread}</span>`;return`<div class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${t}${badge}</div>`}).join('');updateNotifBell()}
 function switchTab(t){currentTab=t;renderTabs();renderCurrentTab()}
-function renderCurrentTab(){const m=document.getElementById('mainContent');switch(currentTab){case'Mapa de Mesas':renderMesas(m);break;case'Salón y Agenda':renderSalon(m);break;case'Reservas':renderReservas(m);break;case'Carta Digital':renderCarta(m);break;case'Gestión Carta':renderGestion(m);break;case'Promos del Dia':renderPromos(m);break;case'Pedidos':renderPedidos(m);break;case'Cobros':renderCobros(m);break;case'Pantalla Cocina':renderCocina(m);break;case'Tomar Pedido':renderTomarPedido(m);break;case'Mis Mesas':renderMisMesas(m);break;case'Solicitar Cobro':renderSolicitarCobro(m);break;case'Hacer Reserva':renderHacerReserva(m);break;case'Pedir Delivery':renderDelivery(m);break;case'Pedidos Delivery':renderDeliveryAdmin(m);break}}
+function renderCurrentTab(){if(currentTab==='Pedir Delivery'&&delStep===2){_saveDelForm();return}const m=document.getElementById('mainContent');switch(currentTab){case'Mapa de Mesas':renderMesas(m);break;case'Salón y Agenda':renderSalon(m);break;case'Reservas':renderReservas(m);break;case'Carta Digital':renderCarta(m);break;case'Gestión Carta':renderGestion(m);break;case'Promos del Dia':renderPromos(m);break;case'Pedidos':renderPedidos(m);break;case'Cobros':renderCobros(m);break;case'Pantalla Cocina':renderCocina(m);break;case'Tomar Pedido':renderTomarPedido(m);break;case'Mis Mesas':renderMisMesas(m);break;case'Solicitar Cobro':renderSolicitarCobro(m);break;case'Hacer Reserva':renderHacerReserva(m);break;case'Pedir Delivery':renderDelivery(m);break;case'Pedidos Delivery':renderDeliveryAdmin(m);break}}
 
 // MESAS
 function renderMesas(el){const mesas=getMesas();const salon=mesas.filter(m=>m.tipo==='salon');const delivery=mesas.filter(m=>m.tipo==='delivery');const lc=salon.filter(m=>m.status==='libre').length;const oc=salon.filter(m=>m.status==='ocupada').length;const cc=salon.filter(m=>m.status==='cuenta').length;const rc=salon.filter(m=>m.status==='reservada').length;const dlc=delivery.filter(m=>m.status==='libre').length;const doc2=delivery.filter(m=>m.status==='ocupada').length;
@@ -573,6 +573,8 @@ function addAllToCalendar(){const reservas=getReservas();const hoy=new Date().to
 
 // DELIVERY (Cliente)
 let delCart=[],delStep=1;
+let _delForm={nombre:'',tel:'',dir:'',zona:'',pago:'Efectivo',hora:'Lo antes posible',notas:''};
+function _saveDelForm(){const n=document.getElementById('delNombre');if(n){_delForm={nombre:n.value,tel:document.getElementById('delTel').value,dir:document.getElementById('delDir').value,zona:document.getElementById('delZona').value,pago:document.getElementById('delPago').value,hora:document.getElementById('delHora').value,notas:document.getElementById('delNotas').value}}}
 function renderDelivery(el){
 const menu=getMenu();
 const totalItems=delCart.reduce((s,it)=>s+it.qty,0);
@@ -612,12 +614,15 @@ h+=`<div class="del-total">Total: $${totalPrice.toFixed(2)}</div>`;
 h+=`</div>`;
 h+=`<div class="card card-gold" style="margin-top:16px"><h3 style="color:var(--red);margin-bottom:16px">\u{1F4CD} Datos de Entrega</h3>`;
 h+=`<div style="display:grid;gap:14px">`;
-h+=`<div><label>Nombre completo</label><input id="delNombre" placeholder="Tu nombre" value="${lsGet('del_nombre','')}"></div>`;
-h+=`<div><label>Teléfono / WhatsApp</label><input id="delTel" placeholder="0412-1234567" value="${lsGet('del_tel','')}"></div>`;
-h+=`<div><label>Dirección de entrega</label><textarea id="delDir" rows="2" placeholder="Calle, edificio/casa, piso, punto de referencia...">${lsGet('del_dir','')}</textarea></div>`;
-h+=`<div><label>Zona / Sector</label><input id="delZona" placeholder="Ej: Centro, La Candelaria..." value="${lsGet('del_zona','')}"></div>`;
-h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Método de Pago</label><select id="delPago"><option>Efectivo</option><option>Pago Móvil</option><option>Transferencia</option><option>Zelle</option><option>Punto de Venta</option></select></div><div><label>Hora deseada</label><select id="delHora"><option value="Lo antes posible">Lo antes posible</option><option value="En 30 min">En 30 min</option><option value="En 1 hora">En 1 hora</option><option value="En 1:30 hrs">En 1:30 hrs</option><option value="En 2 horas">En 2 horas</option></select></div></div>`;
-h+=`<div><label>Notas adicionales</label><textarea id="delNotas" rows="2" placeholder="Sin cebolla, extra salsa, timbre no funciona..."></textarea></div>`;
+const _fn=_delForm.nombre||lsGet('del_nombre',''),_ft=_delForm.tel||lsGet('del_tel',''),_fd=_delForm.dir||lsGet('del_dir',''),_fz=_delForm.zona||lsGet('del_zona','');
+const _pagoOpts=['Efectivo','Pago Móvil','Transferencia','Zelle','Punto de Venta'];
+const _horaOpts=['Lo antes posible','En 30 min','En 1 hora','En 1:30 hrs','En 2 horas'];
+h+=`<div><label>Nombre completo</label><input id="delNombre" placeholder="Tu nombre" value="${_fn}"></div>`;
+h+=`<div><label>Teléfono / WhatsApp</label><input id="delTel" placeholder="0412-1234567" value="${_ft}"></div>`;
+h+=`<div><label>Dirección de entrega</label><textarea id="delDir" rows="2" placeholder="Calle, edificio/casa, piso, punto de referencia...">${_fd}</textarea></div>`;
+h+=`<div><label>Zona / Sector</label><input id="delZona" placeholder="Ej: Centro, La Candelaria..." value="${_fz}"></div>`;
+h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Método de Pago</label><select id="delPago">${_pagoOpts.map(p=>`<option${p===_delForm.pago?' selected':''}>${p}</option>`).join('')}</select></div><div><label>Hora deseada</label><select id="delHora">${_horaOpts.map(h2=>`<option value="${h2}"${h2===_delForm.hora?' selected':''}>${h2}</option>`).join('')}</select></div></div>`;
+h+=`<div><label>Notas adicionales</label><textarea id="delNotas" rows="2" placeholder="Sin cebolla, extra salsa, timbre no funciona...">${_delForm.notas}</textarea></div>`;
 h+=`</div></div>`;
 h+=`<div style="margin-top:20px"><button class="del-wa-btn" onclick="enviarDeliveryWA()"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Enviar Pedido por WhatsApp</button></div>`;
 h+=`</div>`;
@@ -645,7 +650,7 @@ else if(it){it.qty+=d;if(it.qty<=0)delCart=delCart.filter(c=>c.name!==name)}
 renderCurrentTab();
 }
 
-function delGoStep(s){delStep=s;renderCurrentTab()}
+function delGoStep(s){_saveDelForm();delStep=s;renderCurrentTab()}
 
 async function enviarDeliveryWA(){
 if(delCart.length===0){alert('Agrega productos al carrito');return}
@@ -690,7 +695,7 @@ delStep=3;
 renderCurrentTab();
 }
 
-function delReset(){delCart=[];delStep=1;renderCurrentTab()}
+function delReset(){delCart=[];delStep=1;_delForm={nombre:'',tel:'',dir:'',zona:'',pago:'Efectivo',hora:'Lo antes posible',notas:''};renderCurrentTab()}
 
 // DELIVERY ORDERS (Admin)
 function renderDeliveryAdmin(el){
