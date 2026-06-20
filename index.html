@@ -778,7 +778,11 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 // AUTO REFRESH
 setInterval(()=>{if(['Pantalla Cocina','Mis Mesas','Pedidos Delivery'].includes(currentTab))renderCurrentTab();if(currentRole==='mozo')updateNotifBell()},3000);
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+if('serviceWorker' in navigator){
+caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister())});
+setTimeout(()=>{navigator.serviceWorker.register('sw.js?v=2').catch(()=>{})},1000);
+}
 
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;const btn=document.createElement('button');btn.className='btn btn-gold';btn.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 24px;font-size:1rem;box-shadow:0 4px 20px rgba(245,197,24,.4)';btn.innerHTML='📲 Instalar Divina Sazón';btn.onclick=()=>{deferredInstallPrompt.prompt();deferredInstallPrompt.userChoice.then(()=>{btn.remove();deferredInstallPrompt=null})};document.body.appendChild(btn)});
