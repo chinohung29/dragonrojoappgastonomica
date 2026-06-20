@@ -392,7 +392,7 @@ const msg=JSON.parse(e.data);
 if(msg.event==='postgres_changes'){
 const table=msg.payload?.data?.table;
 if(table)await reloadTable(table);
-if(currentTab)renderCurrentTab();
+if(currentTab&&!NO_REFRESH_TABS.includes(currentTab))renderCurrentTab();
 updateNotifBell();
 if(table==='orders'&&currentRole==='cocina')playBeep();
 if(table==='mozo_notifs'&&currentRole==='mozo')playBeep();
@@ -419,10 +419,11 @@ if(m){const data=await sbFetch(m.path);_cache[m.key]=data||[]}
 }
 
 // Polling fallback (Realtime puede tardar, esto garantiza frescura)
+const NO_REFRESH_TABS=['Pedir Delivery','Hacer Reserva','Carta Digital','Gestión Carta','Promos del Dia'];
 setInterval(async()=>{
 if(!currentTab)return;
 await loadAll();
-renderCurrentTab();
+if(!NO_REFRESH_TABS.includes(currentTab))renderCurrentTab();
 updateNotifBell();
 },5000);
 
