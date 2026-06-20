@@ -262,31 +262,162 @@ const MENU_DATA=[
 
 let currentRole=null,currentTab=null;
 
-function lsGet(k,d){try{const v=localStorage.getItem('ds_'+k);return v?JSON.parse(v):d}catch(e){return d}}
-function lsSet(k,v){localStorage.setItem('ds_'+k,JSON.stringify(v))}
-function getMenu(){return lsGet('custom_menu',null)||MENU_DATA}
-function saveMenu(m){lsSet('custom_menu',m);bc.postMessage({type:'menu'})}
-function initMesas(){if(!lsGet('mesas',null)){const m=[];for(let i=1;i<=20;i++)m.push({id:i,status:'libre'});lsSet('mesas',m)}}
-function getMesas(){return lsGet('mesas',[])}
-function setMesas(m){lsSet('mesas',m);bc.postMessage({type:'mesas'})}
-function getOrders(){return lsGet('orders',[])}
-function setOrders(o){lsSet('orders',o);bc.postMessage({type:'orders'})}
-function addOrder(o){const orders=getOrders();orders.unshift(o);setOrders(orders);if(currentRole==='cocina')playBeep()}
-function getCobros(){return lsGet('cobros',[])}
-function addCobro(c){const cobros=getCobros();cobros.unshift(c);lsSet('cobros',cobros)}
-function getReservas(){return lsGet('reservas',[])}
-function setReservas(r){lsSet('reservas',r);bc.postMessage({type:'reservas'})}
-function getPromos(){return lsGet('promos',[])}
-function setPromos(p){lsSet('promos',p);bc.postMessage({type:'promos'})}
-function getMozoNotifs(){const n=lsGet('mozo_notifs',[]);return n.filter(x=>Date.now()-(x.createdAt||Date.now())<24*3600*1000).slice(0,50)}
-function setMozoNotifs(n){lsSet('mozo_notifs',n.slice(0,50));bc.postMessage({type:'mozo_notifs'})}
-function getDeliveryOrders(){return lsGet('delivery_orders',[])}
-function setDeliveryOrders(d){lsSet('delivery_orders',d);bc.postMessage({type:'delivery'})}
+// ── SUPABASE ──
+const SB_URL='https://pjoxfovqbpdsrzlckkyh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqb3hmb3ZxYnBkc3J6bGNra3loIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTkwMjMsImV4cCI6MjA5NzQ3NTAyM30.qYpuDdMPyLftIGOU2Ls4mQGEa3DTK7DqVQfK4vFmmeQ';
 
-const bc=new BroadcastChannel('divina_sazon_sync');
-let prevUnread=0;
-bc.onmessage=(e)=>{if(currentTab)renderCurrentTab();updateNotifBell();if(currentRole==='mozo'&&e.data&&e.data.type==='mozo_notifs'){const nr=getMozoNotifs().filter(x=>!x.read).length;if(nr>prevUnread)playBeep();prevUnread=nr}};
-window.addEventListener('storage',e=>{if(e.key&&e.key.startsWith('ds_')&&currentTab){renderCurrentTab();updateNotifBell()}});
+async function sbFetch(path,opts={}){
+const res=await fetch(SB_URL+'/rest/v1/'+path,{
+headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation',...(opts.headers||{})},
+method:opts.method||'GET',body:opts.body?JSON.stringify(opts.body):undefined});
+if(!res.ok){console.error('SB error',res.status,await res.text());return null}
+const txt=await res.text();return txt?JSON.parse(txt):[]
+}
+
+function lsGet(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+// Cache local para evitar parpadeo
+let _cache={mesas:[],orders:[],reservas:[],cobros:[],promos:[],mozo_notifs:[],delivery_orders:[],custom_menu:[]};
+
+async function loadAll(){
+const [mesas,orders,reservas,cobros,promos,notifs,delivery,menu]=await Promise.all([
+sbFetch('mesas?order=id.asc'),
+sbFetch('orders?order=created_at.desc'),
+sbFetch('reservas?order=created_at.desc'),
+sbFetch('cobros?order=created_at.desc&limit=30'),
+sbFetch('promos?order=created_at.desc'),
+sbFetch('mozo_notifs?order=created_at.desc&limit=50'),
+sbFetch('delivery_orders?order=created_at.desc'),
+sbFetch('custom_menu?order=id.asc')
+]);
+_cache.mesas=mesas||[];_cache.orders=orders||[];_cache.reservas=reservas||[];
+_cache.cobros=cobros||[];_cache.promos=promos||[];_cache.mozo_notifs=notifs||[];
+_cache.delivery_orders=delivery||[];_cache.custom_menu=menu||[];
+}
+
+function getMesas(){return _cache.mesas}
+async function setMesaStatus_db(id,status){
+await sbFetch('mesas?id=eq.'+id,{method:'PATCH',body:{status,updated_at:new Date().toISOString()}});
+}
+function getOrders(){return _cache.orders}
+async function addOrder_db(o){
+await sbFetch('orders',{method:'POST',body:{mesa:o.mesa,dest:o.dest,items:o.items,status:o.status,notas:o.notas||null,mozo:o.mozo||null,time:o.time,created_at:new Date().toISOString()}});
+}
+async function updateOrderStatus_db(id,status){
+await sbFetch('orders?id=eq.'+id,{method:'PATCH',body:{status}});
+}
+async function deleteOrdersByMesa_db(mesa){
+await sbFetch('orders?mesa=eq.'+mesa,{method:'DELETE'});
+}
+function getReservas(){return _cache.reservas}
+async function addReserva_db(r){
+await sbFetch('reservas',{method:'POST',body:r});
+}
+async function updateReserva_db(id,r){
+await sbFetch('reservas?id=eq.'+id,{method:'PATCH',body:r});
+}
+async function deleteReserva_db(id){
+await sbFetch('reservas?id=eq.'+id,{method:'DELETE'});
+}
+function getCobros(){return _cache.cobros}
+async function addCobro_db(c){
+await sbFetch('cobros',{method:'POST',body:c});
+}
+function getPromos(){return _cache.promos}
+async function addPromo_db(p){
+await sbFetch('promos',{method:'POST',body:p});
+}
+async function deletePromo_db(id){
+await sbFetch('promos?id=eq.'+id,{method:'DELETE'});
+}
+function getMozoNotifs(){return _cache.mozo_notifs}
+async function addMozoNotif_db(n){
+await sbFetch('mozo_notifs',{method:'POST',body:n});
+}
+async function markNotifsRead_db(mesa){
+await sbFetch('mozo_notifs?mesa=eq.'+mesa+'&read=eq.false',{method:'PATCH',body:{read:true}});
+}
+async function markAllNotifsRead_db(){
+await sbFetch('mozo_notifs?read=eq.false',{method:'PATCH',body:{read:true}});
+}
+function getDeliveryOrders(){return _cache.delivery_orders}
+async function addDeliveryOrder_db(o){
+await sbFetch('delivery_orders',{method:'POST',body:o});
+}
+async function updateDeliveryStatus_db(id,status){
+await sbFetch('delivery_orders?id=eq.'+id,{method:'PATCH',body:{status}});
+}
+async function deleteDeliveryOrder_db(id){
+await sbFetch('delivery_orders?id=eq.'+id,{method:'DELETE'});
+}
+function getMenu(){const cm=_cache.custom_menu;return cm&&cm.length>0?cm.map(m=>({cat:m.cat,name:m.name,price:parseFloat(m.price),img:m.img,desc:m.description})):MENU_DATA}
+async function saveMenu_db(items){
+await sbFetch('custom_menu',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+if(items&&items.length>0){
+const rows=items.map(it=>({cat:it.cat,name:it.name,price:it.price,img:it.img||'',description:it.desc||''}));
+await sbFetch('custom_menu',{method:'POST',body:rows});
+}
+}
+
+// ── REALTIME ──
+let realtimeWs=null;
+function initRealtime(){
+const wsUrl=SB_URL.replace('https://','wss://')+'/realtime/v1/websocket?apikey='+SB_KEY+'&vsn=1.0.0';
+realtimeWs=new WebSocket(wsUrl);
+realtimeWs.onopen=()=>{
+const joinMsg=JSON.stringify({topic:'realtime:public:*',event:'phx_join',payload:{config:{broadcast:{self:false},postgres_changes:[
+{event:'*',schema:'public',table:'mesas'},
+{event:'*',schema:'public',table:'orders'},
+{event:'*',schema:'public',table:'reservas'},
+{event:'*',schema:'public',table:'delivery_orders'},
+{event:'*',schema:'public',table:'promos'},
+{event:'*',schema:'public',table:'mozo_notifs'},
+{event:'*',schema:'public',table:'cobros'},
+{event:'*',schema:'public',table:'custom_menu'}
+]}},ref:'1',join_ref:'1'});
+realtimeWs.send(joinMsg);
+setInterval(()=>{if(realtimeWs.readyState===1)realtimeWs.send(JSON.stringify({topic:'phoenix',event:'heartbeat',payload:{},ref:Date.now().toString()}))},30000);
+};
+realtimeWs.onmessage=async(e)=>{
+try{
+const msg=JSON.parse(e.data);
+if(msg.event==='postgres_changes'){
+const table=msg.payload?.data?.table;
+if(table)await reloadTable(table);
+if(currentTab)renderCurrentTab();
+updateNotifBell();
+if(table==='orders'&&currentRole==='cocina')playBeep();
+if(table==='mozo_notifs'&&currentRole==='mozo')playBeep();
+}
+}catch(err){}
+};
+realtimeWs.onclose=()=>{setTimeout(initRealtime,3000)};
+realtimeWs.onerror=()=>{realtimeWs.close()};
+}
+
+async function reloadTable(table){
+const map={
+mesas:{path:'mesas?order=id.asc',key:'mesas'},
+orders:{path:'orders?order=created_at.desc',key:'orders'},
+reservas:{path:'reservas?order=created_at.desc',key:'reservas'},
+cobros:{path:'cobros?order=created_at.desc&limit=30',key:'cobros'},
+promos:{path:'promos?order=created_at.desc',key:'promos'},
+mozo_notifs:{path:'mozo_notifs?order=created_at.desc&limit=50',key:'mozo_notifs'},
+delivery_orders:{path:'delivery_orders?order=created_at.desc',key:'delivery_orders'},
+custom_menu:{path:'custom_menu?order=id.asc',key:'custom_menu'}
+};
+const m=map[table];
+if(m){const data=await sbFetch(m.path);_cache[m.key]=data||[]}
+}
+
+// Polling fallback (Realtime puede tardar, esto garantiza frescura)
+setInterval(async()=>{
+if(!currentTab)return;
+await loadAll();
+renderCurrentTab();
+updateNotifBell();
+},5000);
 
 function playBeep(){try{const c=new(window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;o.type='square';g.gain.setValueAtTime(.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.3);o.start(c.currentTime);o.stop(c.currentTime+.3)}catch(e){}}
 
@@ -298,7 +429,7 @@ if(mins<=15)return`<span class="elapsed-time elapsed-amber">⏱ ${mins} min</spa
 return`<span class="elapsed-time elapsed-red">⏱ ${mins} min</span>`;
 }
 
-initMesas();
+loadAll().then(()=>{initRealtime()});
 
 let selectedRole=null;
 function selectRole(r){selectedRole=r;document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));document.querySelector(`.role-btn[data-role="${r}"]`).classList.add('sel');const pw=document.getElementById('pinWrap'),pi=document.getElementById('pinInput');if(r==='cliente'){pw.style.display='none';pi.value=''}else{pw.style.display='block';pi.value='';pi.focus()}document.getElementById('loginError').style.display='none'}
@@ -316,7 +447,7 @@ cliente:['Carta Digital','Promos del Dia','Pedir Delivery','Hacer Reserva']
 function startApp(){document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';document.getElementById('roleBadge').textContent=currentRole.toUpperCase();if(currentRole==='mozo')document.getElementById('mozoNotifBell').style.display='block';else document.getElementById('mozoNotifBell').style.display='none';renderTabs();switchTab(ROLE_TABS[currentRole][0])}
 function updateNotifBell(){if(currentRole!=='mozo')return;const n=getMozoNotifs().filter(x=>!x.read).length;const bell=document.getElementById('notifCount');if(n>0){bell.style.display='flex';bell.textContent=n}else{bell.style.display='none';document.getElementById('notifDropdown').style.display='none'}}
 function toggleNotifPanel(){const dd=document.getElementById('notifDropdown');if(dd.style.display==='block'){dd.style.display='none';return}const notifs=getMozoNotifs().filter(n=>!n.read);if(notifs.length===0){switchTab('Mis Mesas');return}dd.innerHTML=`<h3 style="color:var(--red);margin-bottom:12px;font-size:1rem">\u{1F514} Pedidos Listos</h3>${notifs.map(n=>`<div style="padding:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:start"><div><strong style="color:var(--red)">Mesa ${n.mesa}</strong> <span style="font-size:.8rem;opacity:.6">\u{1F373}</span><div style="font-size:.82rem;opacity:.7;margin-top:2px">${n.items||'Pedido'}</div></div><span style="font-size:.75rem;opacity:.5;white-space:nowrap">${n.time}</span></div>`).join('')}<button class="btn btn-sm btn-gold" style="width:100%;margin-top:12px" onclick="markAllNotifsRead()">✓ Marcar todo como visto</button>`;dd.style.display='block'}
-function markAllNotifsRead(){const n=getMozoNotifs();n.forEach(x=>x.read=true);setMozoNotifs(n);document.getElementById('notifDropdown').style.display='none';renderTabs();if(currentTab==='Mis Mesas')renderCurrentTab()}
+async function markAllNotifsRead(){await markAllNotifsRead_db();await reloadTable('mozo_notifs');document.getElementById('notifDropdown').style.display='none';renderTabs();if(currentTab==='Mis Mesas')renderCurrentTab()}
 function renderTabs(){const bar=document.getElementById('tabsBar');const unread=currentRole==='mozo'?getMozoNotifs().filter(x=>!x.read).length:0;bar.innerHTML=ROLE_TABS[currentRole].map(t=>{let badge='';if(t==='Mis Mesas'&&unread>0)badge=`<span class="notif-badge">${unread}</span>`;return`<div class="tab${currentTab===t?' active':''}" onclick="switchTab('${t}')">${t}${badge}</div>`}).join('');updateNotifBell()}
 function switchTab(t){currentTab=t;renderTabs();renderCurrentTab()}
 function renderCurrentTab(){const m=document.getElementById('mainContent');switch(currentTab){case'Mapa de Mesas':renderMesas(m);break;case'Salón y Agenda':renderSalon(m);break;case'Reservas':renderReservas(m);break;case'Carta Digital':renderCarta(m);break;case'Gestión Carta':renderGestion(m);break;case'Promos del Dia':renderPromos(m);break;case'Pedidos':renderPedidos(m);break;case'Cobros':renderCobros(m);break;case'Pantalla Cocina':renderCocina(m);break;case'Tomar Pedido':renderTomarPedido(m);break;case'Mis Mesas':renderMisMesas(m);break;case'Solicitar Cobro':renderSolicitarCobro(m);break;case'Hacer Reserva':renderHacerReserva(m);break;case'Pedir Delivery':renderDelivery(m);break;case'Pedidos Delivery':renderDeliveryAdmin(m);break}}
@@ -324,18 +455,18 @@ function renderCurrentTab(){const m=document.getElementById('mainContent');switc
 // MESAS
 function renderMesas(el){const mesas=getMesas();const lc=mesas.filter(m=>m.status==='libre').length;const oc=mesas.filter(m=>m.status==='ocupada').length;const cc=mesas.filter(m=>m.status==='cuenta').length;const rc=mesas.filter(m=>m.status==='reservada').length;
 el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Mapa de Mesas</h2><div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;font-size:.85rem"><span>\u{1F7E2} Libre: ${lc}</span><span>\u{1F534} Ocupada: ${oc}</span>${rc?`<span style="color:#38BDF8">\u{1F4D8} Reservada: ${rc}</span>`:''}${cc?`<span>\u{1F7E1} Cuenta: ${cc}</span>`:''}</div><div class="mesas-grid">${mesas.map(m=>`<div class="mesa-cell ${m.status}" onclick="toggleMesa(${m.id})"><span class="mn">${m.id}</span><span class="ms">${m.status==='libre'?'Libre':m.status==='cuenta'?'Cuenta':m.status==='reservada'?'Reserv.':'Ocup.'}</span></div>`).join('')}</div><div id="mesaDetail" style="margin-top:20px"></div>`}
-function toggleMesa(id){const mesas=getMesas();const m=mesas.find(x=>x.id===id);if(currentRole==='admin'){showMesaDetail(id);return}if(m.status==='libre'){m.status='ocupada'}else if(m.status==='ocupada'){m.status='libre'}setMesas(mesas);renderCurrentTab()}
+async function toggleMesa(id){const mesas=getMesas();const m=mesas.find(x=>x.id===id);if(currentRole==='admin'){showMesaDetail(id);return}const ns=m.status==='libre'?'ocupada':m.status==='ocupada'?'libre':m.status;await setMesaStatus_db(id,ns);m.status=ns;renderCurrentTab()}
 function showMesaDetail(id){const mesas=getMesas();const m=mesas.find(x=>x.id===id);const orders=getOrders().filter(o=>o.mesa===id);const det=document.getElementById('mesaDetail');let total=0;let ih=orders.map(o=>o.items.map(it=>{total+=it.price*it.qty;return`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.9rem"><span>${it.qty}x ${it.name}</span><span>$${(it.price*it.qty).toFixed(2)}</span></div>`}).join('')).join('');
 const resInfo=getReservas().find(r=>parseInt(r.mesa)===id);det.innerHTML=`<div class="card card-gold"><h3 style="color:var(--red);margin-bottom:12px">Mesa ${id} — ${m.status.toUpperCase()}</h3>${resInfo&&m.status==='reservada'?`<div style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:10px;margin-bottom:10px;font-size:.85rem"><strong style="color:#38BDF8">${resInfo.nombre}</strong> — ${resInfo.personas} pers. — ${resInfo.fecha||''} ${resInfo.horario}</div>`:''}${orders.length?`<div>${ih}</div><div style="text-align:right;margin-top:8px;font-size:1.2rem;color:var(--red);font-weight:700">Total: $${total.toFixed(2)}</div>`:'<p style="opacity:.5">Sin pedidos</p>'}<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">${m.status!=='libre'&&m.status!=='reservada'?`<button class="btn btn-sm btn-green" onclick="setMesaStatus(${id},'libre')">Liberar Mesa</button>`:''}<button class="btn btn-sm" onclick="setMesaStatus(${id},'ocupada')">Marcar Ocupada</button>${m.status!=='reservada'?`<button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="setMesaStatus(${id},'reservada')">Marcar Reservada</button>`:`<button class="btn btn-sm btn-green" onclick="setMesaStatus(${id},'libre')">Liberar Mesa</button>`}${m.status==='cuenta'?`<button class="btn btn-sm btn-gold" onclick="openCobro(${id})">Procesar Cobro</button>`:''}</div></div>`}
-function setMesaStatus(id,s){const mesas=getMesas();const m=mesas.find(x=>x.id===id);m.status=s;setMesas(mesas);renderCurrentTab()}
+async function setMesaStatus(id,s){await setMesaStatus_db(id,s);const m=getMesas().find(x=>x.id===id);if(m)m.status=s;renderCurrentTab()}
 
 // RESERVAS
-function renderReservas(el){const reservas=getReservas();el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="color:var(--red)">Reservas</h2><button class="btn btn-sm" onclick="openReservaForm()">+ Nueva Reserva</button></div><div class="card">${reservas.length===0?'<p style="opacity:.5">No hay reservas</p>':reservas.map((r,i)=>`<div class="reserva-row"><div><strong style="color:var(--red)">${r.nombre}</strong> — ${r.personas} pers. — Mesa ${r.mesa} — ${r.fecha||'Sin fecha'} ${r.horario}<br><span style="font-size:.82rem;opacity:.6">Tel: ${r.telefono} | Niños: ${r.ninos?'Sí':'No'} | Celíacos: ${r.celiacos?'Sí':'No'}${r.notas?' | '+r.notas:''}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-sm btn-gold" onclick="sendConfirmWA(${i})">Confirmar WA</button><button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="addReservaToCalendar(${i})">\u{1F4C5}</button><button class="btn btn-sm btn-outline" onclick="editReserva(${i})">Editar</button><button class="btn btn-sm" onclick="cancelReserva(${i})">Cancelar</button></div></div>`).join('')}</div>`}
+function renderReservas(el){const reservas=getReservas();el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="color:var(--red)">Reservas</h2><button class="btn btn-sm" onclick="openReservaForm()">+ Nueva Reserva</button></div><div class="card">${reservas.length===0?'<p style="opacity:.5">No hay reservas</p>':reservas.map((r,i)=>`<div class="reserva-row"><div><strong style="color:var(--red)">${r.nombre}</strong> — ${r.personas} pers. — Mesa ${r.mesa} — ${r.fecha||'Sin fecha'} ${r.horario}<br><span style="font-size:.82rem;opacity:.6">Tel: ${r.telefono} | Niños: ${r.ninos?'Sí':'No'} | Celíacos: ${r.celiacos?'Sí':'No'}${r.notas?' | '+r.notas:''}</span></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-sm btn-gold" onclick="sendConfirmWA(${r.id})">Confirmar WA</button><button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="addReservaToCalendar(${r.id})">\u{1F4C5}</button><button class="btn btn-sm btn-outline" onclick="editReserva(${i})">Editar</button><button class="btn btn-sm" onclick="cancelReserva(${i})">Cancelar</button></div></div>`).join('')}</div>`}
 function openReservaForm(idx){const r=idx!==undefined?getReservas()[idx]:null;const mo=Array.from({length:20},(_,i)=>`<option value="${i+1}" ${r&&r.mesa==i+1?'selected':''}>${i+1}</option>`).join('');const ho=HORARIOS.map(h=>`<option value="${h}" ${r&&r.horario===h?'selected':''}>${h}</option>`).join('');const hoy=new Date().toISOString().split('T')[0];openModal(`<h2>${r?'Editar':'Nueva'} Reserva</h2><div style="display:grid;gap:12px"><div><label>Nombre</label><input id="rNombre" value="${r?r.nombre:''}"></div><div><label>Teléfono</label><input id="rTel" value="${r?r.telefono:''}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Fecha</label><input type="date" id="rFecha" min="${hoy}" value="${r&&r.fecha?r.fecha:hoy}"></div><div><label>Horario</label><select id="rHorario">${ho}</select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Personas</label><input type="number" id="rPersonas" min="1" value="${r?r.personas:'2'}"></div><div><label>Mesa</label><select id="rMesa">${mo}</select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Niños</label><select id="rNinos"><option value="no" ${r&&r.ninos?'':'selected'}>No</option><option value="si" ${r&&r.ninos?'selected':''}>Sí</option></select></div><div><label>Celíacos</label><select id="rCeliacos"><option value="no" ${r&&r.celiacos?'':'selected'}>No</option><option value="si" ${r&&r.celiacos?'selected':''}>Sí</option></select></div></div><div><label>Notas</label><textarea id="rNotas" rows="2">${r?r.notas||'':''}</textarea></div><button class="btn" onclick="saveReserva(${idx!==undefined?idx:-1})">Guardar Reserva</button></div>`)}
-function saveReserva(idx){const r={nombre:document.getElementById('rNombre').value,telefono:document.getElementById('rTel').value,fecha:document.getElementById('rFecha').value,personas:document.getElementById('rPersonas').value,mesa:document.getElementById('rMesa').value,horario:document.getElementById('rHorario').value,ninos:document.getElementById('rNinos').value==='si',celiacos:document.getElementById('rCeliacos').value==='si',notas:document.getElementById('rNotas').value};if(!r.nombre||!r.telefono){alert('Completá nombre y teléfono');return}const res=getReservas();if(idx>=0)res[idx]=r;else res.push(r);setReservas(res);closeModal();renderCurrentTab()}
+async function saveReserva(idx){const r={nombre:document.getElementById('rNombre').value,telefono:document.getElementById('rTel').value,fecha:document.getElementById('rFecha').value,personas:parseInt(document.getElementById('rPersonas').value)||2,mesa:parseInt(document.getElementById('rMesa').value),horario:document.getElementById('rHorario').value,ninos:document.getElementById('rNinos').value==='si',celiacos:document.getElementById('rCeliacos').value==='si',notas:document.getElementById('rNotas').value};if(!r.nombre||!r.telefono){alert('Completá nombre y teléfono');return}if(idx>=0){const existing=getReservas()[idx];await updateReserva_db(existing.id,r)}else{await addReserva_db(r)}await reloadTable('reservas');closeModal();renderCurrentTab()}
 function editReserva(i){openReservaForm(i)}
-function cancelReserva(i){if(!confirm('¿Cancelar esta reserva?'))return;const r=getReservas();r.splice(i,1);setReservas(r);renderCurrentTab()}
-function sendConfirmWA(i){const r=getReservas()[i];const tel=r.telefono.replace(/[^0-9]/g,'');const t=encodeURIComponent(`\u{1F525} *DIVINA SAZÓN — RESERVA CONFIRMADA*\n\nEstimado/a ${r.nombre},\n\nSu reserva ha sido confirmada ✅\n\n\u{1F4CB} *Detalles:*\n\u{1F4C5} Fecha: ${r.fecha||'Hoy'}\n\u{1F550} Horario: ${r.horario}\n\u{1FA91} Mesa: ${r.mesa}\n\u{1F465} Personas: ${r.personas}\n\u{1F476} Niños: ${r.ninos?'Sí':'No'}\n\u{1F33E} Celíacos: ${r.celiacos?'Sí':'No'}\n${r.notas?'\u{1F4DD} Notas: '+r.notas+'\n':''}\n⏰ *Tenemos 20 minutos de tolerancia.*\n\n¡Los esperamos! \u{1F525}\u{1F372}`);window.open(`https://wa.me/${tel}?text=${t}`,'_blank')}
+async function cancelReserva(i){if(!confirm('¿Cancelar esta reserva?'))return;const r=getReservas()[i];await deleteReserva_db(r.id);await reloadTable('reservas');renderCurrentTab()}
+function sendConfirmWA(id){const r=getReservas().find(x=>x.id===id);if(!r)return;const tel=r.telefono.replace(/[^0-9]/g,'');const t=encodeURIComponent(`\u{1F525} *DIVINA SAZÓN — RESERVA CONFIRMADA*\n\nEstimado/a ${r.nombre},\n\nSu reserva ha sido confirmada ✅\n\n\u{1F4CB} *Detalles:*\n\u{1F4C5} Fecha: ${r.fecha||'Hoy'}\n\u{1F550} Horario: ${r.horario}\n\u{1FA91} Mesa: ${r.mesa}\n\u{1F465} Personas: ${r.personas}\n\u{1F476} Niños: ${r.ninos?'Sí':'No'}\n\u{1F33E} Celíacos: ${r.celiacos?'Sí':'No'}\n${r.notas?'\u{1F4DD} Notas: '+r.notas+'\n':''}\n⏰ *Tenemos 20 minutos de tolerancia.*\n\n¡Los esperamos! \u{1F525}\u{1F372}`);window.open(`https://wa.me/${tel}?text=${t}`,'_blank')}
 
 // CARTA DIGITAL
 function renderCarta(el){const menu=getMenu();
@@ -356,29 +487,30 @@ function filterCarta(c){document.querySelectorAll('#cartaGrid .cat-section').for
 // GESTION CARTA (Admin)
 function renderGestion(el){const menu=getMenu();el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="color:var(--red)">Gestión de Carta</h2><button class="btn btn-sm" onclick="openMenuItemForm(-1)">+ Agregar Producto</button></div><div class="menu-grid">${menu.map((it,i)=>`<div class="card" style="padding:16px"><img src="${it.img}" style="width:100%;height:120px;object-fit:cover;border-radius:10px;margin-bottom:10px" loading="lazy" onerror="this.style.background='var(--surface)'"><div class="mi-cat">${it.cat}</div><div class="mi-name">${it.name}</div><div class="mi-price" style="margin:6px 0">$${it.price.toFixed(2)}</div><p style="font-size:.8rem;opacity:.5;margin-bottom:10px">${it.desc||''}</p><div style="display:flex;gap:6px"><button class="btn btn-sm btn-gold" onclick="openMenuItemForm(${i})">Editar</button><button class="btn btn-sm btn-outline" onclick="deleteMenuItem(${i})">Eliminar</button></div></div>`).join('')}</div>`}
 function openMenuItemForm(idx){const menu=getMenu();const it=idx>=0?menu[idx]:null;const cOpts=ALL_CATS.map(c=>`<option value="${c}" ${it&&it.cat===c?'selected':''}>${c}</option>`).join('');openModal(`<h2>${it?'Editar':'Agregar'} Producto</h2><div style="display:grid;gap:12px"><div><label>Nombre</label><input id="miName" value="${it?it.name:''}"></div><div><label>Categoría</label><select id="miCat">${cOpts}</select></div><div><label>Precio ($)</label><input type="number" id="miPrice" step="0.01" value="${it?it.price:''}"></div><div><label>Descripción</label><textarea id="miDesc" rows="2">${it?it.desc||'':''}</textarea></div><div><label>URL de imagen</label><input id="miImg" value="${it?it.img:''}"></div><button class="btn" onclick="saveMenuItem(${idx})">Guardar</button></div>`)}
-function saveMenuItem(idx){const item={name:document.getElementById('miName').value,cat:document.getElementById('miCat').value,price:parseFloat(document.getElementById('miPrice').value)||0,desc:document.getElementById('miDesc').value,img:document.getElementById('miImg').value};if(!item.name){alert('Ingresá un nombre');return}const menu=[...getMenu()];if(idx>=0)menu[idx]=item;else menu.push(item);saveMenu(menu);closeModal();renderCurrentTab()}
-function deleteMenuItem(idx){if(!confirm('¿Eliminar este producto?'))return;const menu=[...getMenu()];menu.splice(idx,1);saveMenu(menu);renderCurrentTab()}
+async function saveMenuItem(idx){const item={name:document.getElementById('miName').value,cat:document.getElementById('miCat').value,price:parseFloat(document.getElementById('miPrice').value)||0,desc:document.getElementById('miDesc').value,img:document.getElementById('miImg').value};if(!item.name){alert('Ingresá un nombre');return}const menu=[...getMenu()];if(idx>=0)menu[idx]=item;else menu.push(item);await saveMenu_db(menu);await reloadTable('custom_menu');closeModal();renderCurrentTab()}
+async function deleteMenuItem(idx){if(!confirm('¿Eliminar este producto?'))return;const menu=[...getMenu()];menu.splice(idx,1);await saveMenu_db(menu);await reloadTable('custom_menu');renderCurrentTab()}
 
 // PROMOS
 function renderPromos(el){const promos=getPromos();const isAdmin=currentRole==='admin';const menu=getMenu();el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="color:var(--gold)">Promos del Día</h2>${isAdmin?'<button class="btn btn-sm" onclick="openPromoForm()">+ Nueva Promo</button>':''}</div>${promos.length===0?'<div class="card"><p style="opacity:.5">No hay promos activas</p></div>':`<div class="menu-grid">${promos.map((p,i)=>{const it=menu.find(m=>m.name===p.item);const disc=it?(it.price*(1-p.discount/100)).toFixed(2):0;return`<div class="card" style="position:relative;overflow:hidden">${it?`<img src="${it.img}" loading="lazy" style="width:calc(100%+44px);height:140px;object-fit:cover;border-radius:14px 14px 0 0;margin:-22px -22px 12px" onerror="this.style.display='none'">`:''}
 <div class="promo-badge">-${p.discount}%</div><div class="mi-name">${p.item}</div><p style="font-size:.85rem;margin:4px 0;opacity:.7">${p.description||''}</p>${it?`<div style="display:flex;gap:12px;align-items:center"><span style="text-decoration:line-through;opacity:.4">$${it.price.toFixed(2)}</span><span class="mi-price">$${disc}</span></div>`:''}${isAdmin?`<button class="btn btn-sm" style="margin-top:10px" onclick="deletePromo(${i})">Eliminar</button>`:''}</div>`}).join('')}</div>`}`}
 function openPromoForm(){const opts=getMenu().map(m=>`<option value="${m.name}">${m.name} ($${m.price.toFixed(2)})</option>`).join('');openModal(`<h2>Nueva Promo</h2><div style="display:grid;gap:12px"><div><label>Item del menú</label><select id="pItem">${opts}</select></div><div><label>Descuento (%)</label><input type="number" id="pDiscount" min="1" max="99" value="20"></div><div><label>Descripción</label><input id="pDesc" placeholder="Ej: ¡Solo hoy!"></div><button class="btn" onclick="savePromo()">Crear Promo</button></div>`)}
-function savePromo(){const p={item:document.getElementById('pItem').value,discount:parseInt(document.getElementById('pDiscount').value),description:document.getElementById('pDesc').value};const promos=getPromos();promos.push(p);setPromos(promos);closeModal();renderCurrentTab()}
-function deletePromo(i){const p=getPromos();p.splice(i,1);setPromos(p);renderCurrentTab()}
+async function savePromo(){const p={item:document.getElementById('pItem').value,discount:parseInt(document.getElementById('pDiscount').value),description:document.getElementById('pDesc').value};await addPromo_db(p);await reloadTable('promos');closeModal();renderCurrentTab()}
+async function deletePromo(i){const p=getPromos()[i];await deletePromo_db(p.id);await reloadTable('promos');renderCurrentTab()}
 
 // ORDER CARD
-function renderOrderCard(o,i,showControls,showElapsed){
+function renderOrderCard(o,showControls,showElapsed){
 const sc={'Nuevo':'nuevo','En preparación':'preparando','Listo':'listo','Entregado':'entregado'}[o.status]||'nuevo';
 const isMozo=currentRole==='mozo';
-return`<div class="card order-card ${sc}" style="margin-bottom:12px"><div class="oc-header"><span class="oc-mesa">Mesa ${o.mesa} \u{1F373} Cocina</span><div style="display:flex;gap:8px;align-items:center">${showElapsed&&o.createdAt?formatElapsed(o.createdAt):''}<span class="oc-time">${o.time}</span></div></div><div class="oc-items">${o.items.map(it=>`<div class="oc-item">${it.qty}x ${it.name} <span style="opacity:.4">$${(it.price*it.qty).toFixed(2)}</span></div>`).join('')}</div>${o.notas?`<div class="oc-notas">\u{1F4DD} ${o.notas}</div>`:''}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span class="oc-status status-${sc}">${o.status}</span>${showControls?`<div style="display:flex;gap:6px">${o.status==='Nuevo'?`<button class="btn btn-sm btn-amber" onclick="changeOrderStatus(${i},'En preparación')">\u{1F525} En preparación</button>`:''}${o.status==='En preparación'?`<button class="btn btn-sm btn-green" onclick="changeOrderStatus(${i},'Listo')">✅ Pedido Listo</button>`:''}${o.status==='Listo'&&!isMozo?'<span style="font-size:.82rem;opacity:.5">Esperando mozo</span>':''}${o.status==='Listo'&&isMozo?`<button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="changeOrderStatus(${i},'Entregado')">\u{1F37D}️ Entregado</button>`:''}</div>`:''}</div></div>`}
-function changeOrderStatus(i,status){const orders=getOrders();if(!orders[i])return;const order=orders[i];order.status=status;setOrders(orders);if(status==='Listo'){const n=getMozoNotifs();n.unshift({mesa:order.mesa,dest:'cocina',items:order.items.map(it=>it.qty+'x '+it.name).join(', '),time:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),read:false,createdAt:Date.now()});setMozoNotifs(n);playBeep()}renderCurrentTab()}
+const ts=o.created_at?new Date(o.created_at).getTime():null;
+return`<div class="card order-card ${sc}" style="margin-bottom:12px"><div class="oc-header"><span class="oc-mesa">Mesa ${o.mesa} \u{1F373} Cocina</span><div style="display:flex;gap:8px;align-items:center">${showElapsed&&ts?formatElapsed(ts):''}<span class="oc-time">${o.time||''}</span></div></div><div class="oc-items">${o.items.map(it=>`<div class="oc-item">${it.qty}x ${it.name} <span style="opacity:.4">$${(it.price*it.qty).toFixed(2)}</span></div>`).join('')}</div>${o.notas?`<div class="oc-notas">\u{1F4DD} ${o.notas}</div>`:''}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span class="oc-status status-${sc}">${o.status}</span>${showControls?`<div style="display:flex;gap:6px">${o.status==='Nuevo'?`<button class="btn btn-sm btn-amber" onclick="changeOrderStatus(${o.id},'En preparación')">\u{1F525} En preparación</button>`:''}${o.status==='En preparación'?`<button class="btn btn-sm btn-green" onclick="changeOrderStatus(${o.id},'Listo')">✅ Pedido Listo</button>`:''}${o.status==='Listo'&&!isMozo?'<span style="font-size:.82rem;opacity:.5">Esperando mozo</span>':''}${o.status==='Listo'&&isMozo?`<button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="changeOrderStatus(${o.id},'Entregado')">\u{1F37D}️ Entregado</button>`:''}</div>`:''}</div></div>`}
+async function changeOrderStatus(i,status){const orders=getOrders();const order=orders.find(o=>o.id===i);if(!order)return;await updateOrderStatus_db(i,status);order.status=status;if(status==='Listo'){await addMozoNotif_db({mesa:order.mesa,dest:'cocina',items:order.items.map(it=>it.qty+'x '+it.name).join(', '),time:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}),read:false,created_at:new Date().toISOString()});await reloadTable('mozo_notifs');playBeep()}renderCurrentTab()}
 
 // PEDIDOS (Admin)
-function renderPedidos(el){const orders=getOrders();el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Todos los Pedidos</h2><div>${orders.length===0?'<div class="card"><p style="opacity:.5">No hay pedidos</p></div>':orders.map((o,i)=>renderOrderCard(o,i,true,true)).join('')}</div>`}
+function renderPedidos(el){const orders=getOrders();el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Todos los Pedidos</h2><div>${orders.length===0?'<div class="card"><p style="opacity:.5">No hay pedidos</p></div>':orders.map(o=>renderOrderCard(o,true,true)).join('')}</div>`}
 
 // COCINA - muestra TODOS los productos (comida y bebidas)
 let lastCC=0;
-function renderCocina(el){const allOrders=getOrders();const orders=allOrders.map((o,i)=>({...o,_idx:i})).filter(o=>o.status!=='Entregado');const nc=orders.filter(o=>o.status==='Nuevo').length;if(currentRole==='cocina'&&nc>lastCC)playBeep();lastCC=nc;el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">\u{1F373} Pantalla Cocina</h2><div>${orders.length===0?'<div class="card"><p style="opacity:.5">Sin pedidos pendientes</p></div>':orders.map(o=>renderOrderCard(o,o._idx,true,true)).join('')}</div>`}
+function renderCocina(el){const orders=getOrders().filter(o=>o.status!=='Entregado');const nc=orders.filter(o=>o.status==='Nuevo').length;if(currentRole==='cocina'&&nc>lastCC)playBeep();lastCC=nc;el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">\u{1F373} Pantalla Cocina</h2><div>${orders.length===0?'<div class="card"><p style="opacity:.5">Sin pedidos pendientes</p></div>':orders.map(o=>renderOrderCard(o,true,true)).join('')}</div>`}
 
 // TOMAR PEDIDO (Mozo)
 let pedidoCart=[],pedidoMesa=1;
@@ -391,31 +523,31 @@ if(pedidoCart.length>0){let total=pedidoCart.reduce((s,it)=>s+it.price*it.qty,0)
 el.innerHTML=h}
 function filterPMenu(c){document.querySelectorAll('#pMenuGrid .card').forEach(el=>{el.style.display=el.dataset.cat===c?'flex':'none'})}
 function chPQ(name,price,cat,d){let it=pedidoCart.find(c=>c.name===name);if(!it&&d>0)pedidoCart.push({name,price,cat,qty:1});else if(it){it.qty+=d;if(it.qty<=0)pedidoCart=pedidoCart.filter(c=>c.name!==name)}renderCurrentTab()}
-function enviarPedido(){if(!pedidoCart.length)return;pedidoMesa=parseInt(document.getElementById('pedidoMesaSel').value);const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});const notas=(document.getElementById('pedidoNotas')||{}).value||'';const mesas=getMesas();const m=mesas.find(x=>x.id===pedidoMesa);if(m&&m.status==='libre')m.status='ocupada';setMesas(mesas);
-addOrder({mesa:pedidoMesa,dest:'cocina',items:pedidoCart.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,createdAt:Date.now(),mozo:currentRole,notas});
-pedidoCart=[];alert('¡Pedido enviado!');renderCurrentTab()}
+async function enviarPedido(){if(!pedidoCart.length)return;pedidoMesa=parseInt(document.getElementById('pedidoMesaSel').value);const now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});const notas=(document.getElementById('pedidoNotas')||{}).value||'';const m=getMesas().find(x=>x.id===pedidoMesa);if(m&&m.status==='libre')await setMesaStatus_db(pedidoMesa,'ocupada');
+await addOrder_db({mesa:pedidoMesa,dest:'cocina',items:pedidoCart.map(it=>({name:it.name,qty:it.qty,price:it.price})),status:'Nuevo',time:now,mozo:currentRole,notas:notas||null});
+await loadAll();pedidoCart=[];alert('¡Pedido enviado!');renderCurrentTab()}
 
 // MIS MESAS (Mozo)
-function renderMisMesas(el){const allOrd=getOrders();const orders=allOrd.map((o,i)=>({...o,_idx:i})).filter(o=>o.mozo===currentRole);const mesaIds=[...new Set(orders.map(o=>o.mesa))];const notifs=getMozoNotifs();const unreadByMesa={};notifs.filter(n=>!n.read).forEach(n=>{unreadByMesa[n.mesa]=(unreadByMesa[n.mesa]||0)+1});
+function renderMisMesas(el){const allOrd=getOrders();const orders=allOrd.filter(o=>o.mozo===currentRole);const mesaIds=[...new Set(orders.map(o=>o.mesa))];const notifs=getMozoNotifs();const unreadByMesa={};notifs.filter(n=>!n.read).forEach(n=>{unreadByMesa[n.mesa]=(unreadByMesa[n.mesa]||0)+1});
 const unreadNotifs=notifs.filter(n=>!n.read);
 let notifPanel='';
 if(unreadNotifs.length>0){notifPanel=`<div class="card card-gold" style="margin-bottom:20px"><h3 style="color:var(--red);margin-bottom:12px">\u{1F514} Pedidos Listos</h3>${unreadNotifs.map(n=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><div><strong style="color:var(--red)">Mesa ${n.mesa}</strong> — <span style="font-size:.85rem">\u{1F373} Cocina</span><div style="font-size:.82rem;opacity:.7;margin-top:2px">${n.items||'Pedido completo'}</div></div><div style="text-align:right;font-size:.78rem"><span style="opacity:.5">${n.time}</span><br><button class="btn btn-sm btn-gold" style="margin-top:4px" onclick="dismissNotifs(${n.mesa})">✓ Visto</button></div></div>`).join('')}</div>`}
-el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Mis Mesas</h2>${notifPanel}${mesaIds.length===0?'<div class="card"><p style="opacity:.5">No estás atendiendo mesas</p></div>':mesaIds.map(mid=>{const mo=orders.filter(o=>o.mesa===mid&&o.status!=='Entregado');const entregados=orders.filter(o=>o.mesa===mid&&o.status==='Entregado').length;let total=mo.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.price*it.qty,0),0);const listos=mo.filter(o=>o.status==='Listo').length;const unreads=unreadByMesa[mid]||0;return`<div class="card" style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:'Playfair Display',serif">Mesa ${mid}</div><div style="display:flex;gap:6px;align-items:center">${unreads>0?`<span style="width:12px;height:12px;border-radius:50%;background:var(--red);display:inline-block;animation:pulse-badge 1s ease-in-out infinite"></span>`:''}<span style="font-size:.85rem">${mo.length} pedido${mo.length>1?'s':''} — $${total.toFixed(2)}</span></div></div><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;font-size:.78rem">${mo.filter(o=>o.status==='Nuevo').length?`<span class="oc-status status-nuevo">${mo.filter(o=>o.status==='Nuevo').length} nuevo</span>`:''}${mo.filter(o=>o.status==='En preparación').length?`<span class="oc-status status-preparando">${mo.filter(o=>o.status==='En preparación').length} preparando</span>`:''}${listos?`<span class="oc-status status-listo">${listos} listo ✅</span>`:''}${entregados?`<span class="oc-status status-entregado">${entregados} entregado</span>`:''}</div>${mo.filter(o=>o.status==='Listo').map(o=>renderOrderCard(o,o._idx,true,false)).join('')}</div>`}).join('')}`}
-function dismissNotifs(mesa){const n=getMozoNotifs();n.forEach(x=>{if(x.mesa===mesa)x.read=true});setMozoNotifs(n);renderTabs();renderCurrentTab()}
+el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Mis Mesas</h2>${notifPanel}${mesaIds.length===0?'<div class="card"><p style="opacity:.5">No estás atendiendo mesas</p></div>':mesaIds.map(mid=>{const mo=orders.filter(o=>o.mesa===mid&&o.status!=='Entregado');const entregados=orders.filter(o=>o.mesa===mid&&o.status==='Entregado').length;let total=mo.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.price*it.qty,0),0);const listos=mo.filter(o=>o.status==='Listo').length;const unreads=unreadByMesa[mid]||0;return`<div class="card" style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:'Playfair Display',serif">Mesa ${mid}</div><div style="display:flex;gap:6px;align-items:center">${unreads>0?`<span style="width:12px;height:12px;border-radius:50%;background:var(--red);display:inline-block;animation:pulse-badge 1s ease-in-out infinite"></span>`:''}<span style="font-size:.85rem">${mo.length} pedido${mo.length>1?'s':''} — $${total.toFixed(2)}</span></div></div><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;font-size:.78rem">${mo.filter(o=>o.status==='Nuevo').length?`<span class="oc-status status-nuevo">${mo.filter(o=>o.status==='Nuevo').length} nuevo</span>`:''}${mo.filter(o=>o.status==='En preparación').length?`<span class="oc-status status-preparando">${mo.filter(o=>o.status==='En preparación').length} preparando</span>`:''}${listos?`<span class="oc-status status-listo">${listos} listo ✅</span>`:''}${entregados?`<span class="oc-status status-entregado">${entregados} entregado</span>`:''}</div>${mo.filter(o=>o.status==='Listo').map(o=>renderOrderCard(o,true,false)).join('')}</div>`}).join('')}`}
+async function dismissNotifs(mesa){await markNotifsRead_db(mesa);await reloadTable('mozo_notifs');renderTabs();renderCurrentTab()}
 
 // SOLICITAR COBRO (Mozo)
 function renderSolicitarCobro(el){const mesas=getMesas().filter(m=>m.status==='ocupada'||m.status==='cuenta');el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Solicitar Cobro</h2><div class="card">${mesas.length===0?'<p style="opacity:.5">No hay mesas ocupadas</p>':mesas.map(m=>{const orders=getOrders().filter(o=>o.mesa===m.id);let total=orders.reduce((s,o)=>s+o.items.reduce((ss,it)=>ss+it.price*it.qty,0),0);return`<div class="reserva-row"><div><strong style="color:var(--red)">Mesa ${m.id}</strong> — Total: $${total.toFixed(2)} ${m.status==='cuenta'?'<span style="color:var(--amber)">(Cuenta solicitada)</span>':''}</div>${m.status!=='cuenta'?`<button class="btn btn-sm btn-gold" onclick="solicitarCobro(${m.id})">Solicitar Cuenta</button>`:'<span style="font-size:.82rem;opacity:.5">Esperando admin</span>'}</div>`}).join('')}</div>`}
-function solicitarCobro(mid){const mesas=getMesas();const m=mesas.find(x=>x.id===mid);if(m){m.status='cuenta';setMesas(mesas)}alert('Cuenta solicitada para Mesa '+mid);renderCurrentTab()}
+async function solicitarCobro(mid){await setMesaStatus_db(mid,'cuenta');const m=getMesas().find(x=>x.id===mid);if(m)m.status='cuenta';alert('Cuenta solicitada para Mesa '+mid);renderCurrentTab()}
 
 // COBROS (Admin)
 function renderCobros(el){const mesas=getMesas().filter(m=>m.status==='ocupada'||m.status==='cuenta').sort((a,b)=>(a.status==='cuenta'?0:1)-(b.status==='cuenta'?0:1));const cobros=getCobros().slice(0,20);el.innerHTML=`<h2 style="color:var(--red);margin-bottom:16px">Cobros</h2><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px">${mesas.length===0?'<div class="card"><p style="opacity:.5">No hay mesas para cobrar</p></div>':mesas.map(m=>`<div class="card ${m.status==='cuenta'?'mesa-cell cuenta':''}" style="cursor:pointer;text-align:center;aspect-ratio:auto;border-radius:var(--radius)" onclick="openCobro(${m.id})"><div style="font-size:1.3rem;font-weight:700;color:var(--red);font-family:'Playfair Display',serif">Mesa ${m.id}</div><div style="font-size:.82rem;opacity:.6">${m.status==='cuenta'?'\u{1F4B0} Cuenta solicitada':'Click para cobrar'}</div></div>`).join('')}</div>${cobros.length?`<h3 style="color:var(--gold);margin:20px 0 12px">Historial de Cobros</h3><div class="card"><table class="cobro-table"><thead><tr><th>Mesa</th><th>Hora</th><th>Items</th><th>Desc.</th><th>Método</th><th>Total</th></tr></thead><tbody>${cobros.map(c=>`<tr><td>${c.mesa}</td><td>${new Date(c.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</td><td>${c.items.map(it=>it.qty+'x '+it.name).join(', ')}</td><td>${c.descuento}%</td><td>${c.metodo}</td><td style="color:var(--red);font-weight:700">$${c.total.toFixed(2)}</td></tr>`).join('')}</tbody></table></div>`:''}<div id="cobroDetail"></div>`}
 function openCobro(mid){const orders=getOrders().filter(o=>o.mesa===mid);let items=[];orders.forEach(o=>o.items.forEach(it=>{const ex=items.find(x=>x.name===it.name);if(ex)ex.qty+=it.qty;else items.push({...it})}));let total=items.reduce((s,it)=>s+it.price*it.qty,0);openModal(`<h2>Cobro — Mesa ${mid}</h2><table class="cobro-table"><thead><tr><th>Item</th><th>Cant</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody>${items.map(it=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>$${it.price.toFixed(2)}</td><td>$${(it.price*it.qty).toFixed(2)}</td></tr>`).join('')}</tbody></table><div style="margin:12px 0"><label>Descuento (%)</label><input type="number" id="cobroDesc" min="0" max="100" value="0" onchange="updCT(${total})"></div><div class="cobro-total" id="cobroTD">Total: $${total.toFixed(2)}</div><div style="margin-bottom:14px"><label>Método de pago</label><select id="cobroMet"><option>Efectivo</option><option>Pago Móvil</option><option>Transferencia</option><option>Zelle</option><option>Punto de Venta</option></select></div><button class="btn btn-green" style="width:100%" onclick="cerrarCobro(${mid})">Cerrar Mesa y Cobrar</button>`)}
 function updCT(base){const d=parseInt(document.getElementById('cobroDesc').value)||0;document.getElementById('cobroTD').textContent='Total: $'+(base*(1-d/100)).toFixed(2)}
-function cerrarCobro(mid){const mesaOrders=getOrders().filter(o=>o.mesa===mid);let items=[];mesaOrders.forEach(o=>o.items.forEach(it=>{const ex=items.find(x=>x.name===it.name);if(ex)ex.qty+=it.qty;else items.push({...it})}));const base=items.reduce((s,it)=>s+it.price*it.qty,0);const desc=parseInt((document.getElementById('cobroDesc')||{}).value)||0;addCobro({mesa:mid,timestamp:Date.now(),items,descuento:desc,metodo:(document.getElementById('cobroMet')||{}).value||'Efectivo',total:parseFloat((base*(1-desc/100)).toFixed(2))});const orders=getOrders().filter(o=>o.mesa!==mid);setOrders(orders);const mesas=getMesas();const m=mesas.find(x=>x.id===mid);if(m){m.status='libre'}setMesas(mesas);closeModal();alert('Mesa '+mid+' cobrada y liberada');renderCurrentTab()}
+async function cerrarCobro(mid){const mesaOrders=getOrders().filter(o=>o.mesa===mid);let items=[];mesaOrders.forEach(o=>o.items.forEach(it=>{const ex=items.find(x=>x.name===it.name);if(ex)ex.qty+=it.qty;else items.push({...it})}));const base=items.reduce((s,it)=>s+it.price*it.qty,0);const desc=parseInt((document.getElementById('cobroDesc')||{}).value)||0;await addCobro_db({mesa:mid,timestamp:Date.now(),items,descuento:desc,metodo:(document.getElementById('cobroMet')||{}).value||'Efectivo',total:parseFloat((base*(1-desc/100)).toFixed(2)),created_at:new Date().toISOString()});await deleteOrdersByMesa_db(mid);await setMesaStatus_db(mid,'libre');await loadAll();closeModal();alert('Mesa '+mid+' cobrada y liberada');renderCurrentTab()}
 
 // HACER RESERVA (Cliente)
 function renderHacerReserva(el){const mo=Array.from({length:20},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');const ho=HORARIOS.map(h=>`<option value="${h}">${h}</option>`).join('');const hoy=new Date().toISOString().split('T')[0];el.innerHTML=`<div style="max-width:500px;margin:0 auto"><div class="card card-gold"><h2 style="color:var(--red);margin-bottom:16px">Hacer Reserva</h2><div style="display:grid;gap:14px"><div><label>Nombre</label><input id="crN"></div><div><label>Teléfono</label><input id="crT"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Fecha</label><input type="date" id="crF" min="${hoy}" value="${hoy}"></div><div><label>Horario</label><select id="crH">${ho}</select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Personas</label><input type="number" id="crP" min="1" value="2"></div><div><label>Mesa</label><select id="crM">${mo}</select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Niños</label><select id="crNi"><option value="no">No</option><option value="si">Sí</option></select></div><div><label>Celíacos</label><select id="crCe"><option value="no">No</option><option value="si">Sí</option></select></div></div><div><label>Notas</label><textarea id="crNo" rows="2" placeholder="Alergias, cumpleaños, etc."></textarea></div><button class="btn" onclick="enviarReservaCliente()">Enviar Reserva por WhatsApp</button></div></div></div>`}
-function enviarReservaCliente(){const n=document.getElementById('crN').value,t=document.getElementById('crT').value;if(!n||!t){alert('Completá nombre y teléfono');return}const d={nombre:n,telefono:t,fecha:document.getElementById('crF').value,personas:document.getElementById('crP').value,mesa:document.getElementById('crM').value,horario:document.getElementById('crH').value,ninos:document.getElementById('crNi').value==='si',celiacos:document.getElementById('crCe').value==='si',notas:document.getElementById('crNo').value};const r=getReservas();r.push(d);setReservas(r);const txt=encodeURIComponent(`\u{1F525} *RESERVA — Divina Sazón*\n\u{1F464} Nombre: ${d.nombre}\n\u{1F4F1} Tel: ${d.telefono}\n\u{1F4C5} Fecha: ${d.fecha}\n\u{1F550} Horario: ${d.horario}\n\u{1F465} Personas: ${d.personas}\n\u{1F476} Niños: ${d.ninos?'Sí':'No'}\n\u{1F33E} Celíacos: ${d.celiacos?'Sí':'No'}\n\u{1FA91} Mesa: ${d.mesa}\n\u{1F4DD} Notas: ${d.notas||'Ninguna'}`);window.open(`https://wa.me/${WA}?text=${txt}`,'_blank')}
+async function enviarReservaCliente(){const n=document.getElementById('crN').value,t=document.getElementById('crT').value;if(!n||!t){alert('Completá nombre y teléfono');return}const d={nombre:n,telefono:t,fecha:document.getElementById('crF').value,personas:parseInt(document.getElementById('crP').value)||2,mesa:parseInt(document.getElementById('crM').value),horario:document.getElementById('crH').value,ninos:document.getElementById('crNi').value==='si',celiacos:document.getElementById('crCe').value==='si',notas:document.getElementById('crNo').value,created_at:new Date().toISOString()};await addReserva_db(d);await reloadTable('reservas');const txt=encodeURIComponent(`\u{1F525} *RESERVA — Divina Sazón*\n\u{1F464} Nombre: ${d.nombre}\n\u{1F4F1} Tel: ${d.telefono}\n\u{1F4C5} Fecha: ${d.fecha}\n\u{1F550} Horario: ${d.horario}\n\u{1F465} Personas: ${d.personas}\n\u{1F476} Niños: ${d.ninos?'Sí':'No'}\n\u{1F33E} Celíacos: ${d.celiacos?'Sí':'No'}\n\u{1FA91} Mesa: ${d.mesa}\n\u{1F4DD} Notas: ${d.notas||'Ninguna'}`);window.open(`https://wa.me/${WA}?text=${txt}`,'_blank')}
 
 // SALON Y AGENDA (Admin)
 function renderSalon(el){const mesas=getMesas();const reservas=getReservas();const hoy=new Date().toISOString().split('T')[0];const reservasHoy=reservas.filter(r=>r.fecha===hoy||!r.fecha);const lc=mesas.filter(m=>m.status==='libre').length;const oc=mesas.filter(m=>m.status==='ocupada').length;const rc=mesas.filter(m=>m.status==='reservada').length;const cc=mesas.filter(m=>m.status==='cuenta').length;
@@ -423,11 +555,11 @@ el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items
 <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;font-size:.85rem"><span>\u{1F7E2} Libre: ${lc}</span><span>\u{1F534} Ocupada: ${oc}</span><span style="color:#38BDF8">\u{1F4D8} Reservada: ${rc}</span>${cc?`<span>\u{1F7E1} Cuenta: ${cc}</span>`:''}</div>
 <div class="mesas-grid" style="margin-bottom:24px">${mesas.map(m=>{const res=reservasHoy.find(r=>parseInt(r.mesa)===m.id);return`<div class="mesa-cell ${m.status}" onclick="showMesaDetail(${m.id})" style="position:relative"><span class="mn">${m.id}</span><span class="ms">${m.status==='libre'?'Libre':m.status==='cuenta'?'Cuenta':m.status==='reservada'?'Reserv.':'Ocup.'}</span>${res?`<span style="position:absolute;bottom:2px;font-size:.5rem;color:#38BDF8">${res.horario}</span>`:''}</div>`}).join('')}</div>
 <h3 style="color:var(--red);margin-bottom:12px">\u{1F4C5} Agenda de Hoy — ${new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</h3>
-${reservasHoy.length===0?'<div class="card"><p style="opacity:.5">No hay reservas para hoy</p></div>':`<div class="card">${HORARIOS.map(h=>{const res=reservasHoy.filter(r=>r.horario===h);if(!res.length)return`<div style="padding:8px 0;border-bottom:1px solid var(--border);opacity:.3"><span style="color:var(--text-secondary);font-weight:600">${h}</span> — Sin reservas</div>`;return res.map(r=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><span style="color:var(--red);font-weight:700">${h}</span> — <strong style="color:var(--red)">${r.nombre}</strong> — ${r.personas} pers. — Mesa ${r.mesa}<br><span style="font-size:.8rem;opacity:.6">Tel: ${r.telefono}${r.ninos?' | Niños: Sí':''}${r.celiacos?' | Celíacos: Sí':''}${r.notas?' | '+r.notas:''}</span></div><div style="display:flex;gap:4px"><button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8;font-size:.75rem" onclick="setMesaStatus(${parseInt(r.mesa)},'reservada');renderCurrentTab()">Reservar Mesa</button><button class="btn btn-sm btn-gold" style="font-size:.75rem" onclick="addReservaToCalendar(${reservas.indexOf(r)})">\u{1F4C5}</button></div></div>`).join('')}).join('')}</div>`}
+${reservasHoy.length===0?'<div class="card"><p style="opacity:.5">No hay reservas para hoy</p></div>':`<div class="card">${HORARIOS.map(h=>{const res=reservasHoy.filter(r=>r.horario===h);if(!res.length)return`<div style="padding:8px 0;border-bottom:1px solid var(--border);opacity:.3"><span style="color:var(--text-secondary);font-weight:600">${h}</span> — Sin reservas</div>`;return res.map(r=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><span style="color:var(--red);font-weight:700">${h}</span> — <strong style="color:var(--red)">${r.nombre}</strong> — ${r.personas} pers. — Mesa ${r.mesa}<br><span style="font-size:.8rem;opacity:.6">Tel: ${r.telefono}${r.ninos?' | Niños: Sí':''}${r.celiacos?' | Celíacos: Sí':''}${r.notas?' | '+r.notas:''}</span></div><div style="display:flex;gap:4px"><button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8;font-size:.75rem" onclick="setMesaStatus(${parseInt(r.mesa)},'reservada');renderCurrentTab()">Reservar Mesa</button><button class="btn btn-sm btn-gold" style="font-size:.75rem" onclick="addReservaToCalendar(${r.id})">\u{1F4C5}</button></div></div>`).join('')}).join('')}</div>`}
 <div id="mesaDetail" style="margin-top:20px"></div>`}
-function autoReservarMesas(){const reservas=getReservas();const hoy=new Date().toISOString().split('T')[0];const mesas=getMesas();let count=0;reservas.filter(r=>r.fecha===hoy||!r.fecha).forEach(r=>{const m=mesas.find(x=>x.id===parseInt(r.mesa));if(m&&m.status==='libre'){m.status='reservada';count++}});setMesas(mesas);alert(count+' mesa(s) marcada(s) como reservada(s)');renderCurrentTab()}
-function addReservaToCalendar(idx){const r=getReservas()[idx];if(!r)return;const fecha=r.fecha||new Date().toISOString().split('T')[0];const [hh,mm]=r.horario.split(':');const endH=String(parseInt(hh)+2).padStart(2,'0');const title=encodeURIComponent(`\u{1F525} Reserva: ${r.nombre} - Mesa ${r.mesa}`);const details=encodeURIComponent(`Personas: ${r.personas}\nTeléfono: ${r.telefono}\nNiños: ${r.ninos?'Sí':'No'}\nCelíacos: ${r.celiacos?'Sí':'No'}\nNotas: ${r.notas||'Ninguna'}\n\nDivina Sazón - Sistema Gastronómico`);const dates=`${fecha.replace(/-/g,'')}T${r.horario.replace(':','')}00/${fecha.replace(/-/g,'')}T${endH}${mm}00`;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=Divina+Sazon+Restaurante`,'_blank')}
-function addAllToCalendar(){const reservas=getReservas();const hoy=new Date().toISOString().split('T')[0];const todayRes=reservas.filter(r=>r.fecha===hoy||!r.fecha);if(!todayRes.length){alert('No hay reservas para hoy');return}todayRes.forEach((_,i)=>{const idx=reservas.indexOf(todayRes[i]);addReservaToCalendar(idx)});alert(todayRes.length+' reserva(s) abiertas en Google Calendar')}
+async function autoReservarMesas(){const reservas=getReservas();const hoy=new Date().toISOString().split('T')[0];const mesas=getMesas();let count=0;const toReserve=reservas.filter(r=>r.fecha===hoy||!r.fecha).filter(r=>{const m=mesas.find(x=>x.id===parseInt(r.mesa));return m&&m.status==='libre'});for(const r of toReserve){await setMesaStatus_db(parseInt(r.mesa),'reservada');count++}await reloadTable('mesas');alert(count+' mesa(s) marcada(s) como reservada(s)');renderCurrentTab()}
+function addReservaToCalendar(id){const r=getReservas().find(x=>x.id===id);if(!r)return;const fecha=r.fecha||new Date().toISOString().split('T')[0];const [hh,mm]=r.horario.split(':');const endH=String(parseInt(hh)+2).padStart(2,'0');const title=encodeURIComponent(`\u{1F525} Reserva: ${r.nombre} - Mesa ${r.mesa}`);const details=encodeURIComponent(`Personas: ${r.personas}\nTeléfono: ${r.telefono}\nNiños: ${r.ninos?'Sí':'No'}\nCelíacos: ${r.celiacos?'Sí':'No'}\nNotas: ${r.notas||'Ninguna'}\n\nDivina Sazón - Sistema Gastronómico`);const dates=`${fecha.replace(/-/g,'')}T${r.horario.replace(':','')}00/${fecha.replace(/-/g,'')}T${endH}${mm}00`;window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=Divina+Sazon+Restaurante`,'_blank')}
+function addAllToCalendar(){const reservas=getReservas();const hoy=new Date().toISOString().split('T')[0];const todayRes=reservas.filter(r=>r.fecha===hoy||!r.fecha);if(!todayRes.length){alert('No hay reservas para hoy');return}todayRes.forEach(r=>addReservaToCalendar(r.id));alert(todayRes.length+' reserva(s) abiertas en Google Calendar')}
 
 // DELIVERY (Cliente)
 let delCart=[],delStep=1;
@@ -505,7 +637,7 @@ renderCurrentTab();
 
 function delGoStep(s){delStep=s;renderCurrentTab()}
 
-function enviarDeliveryWA(){
+async function enviarDeliveryWA(){
 if(delCart.length===0){alert('Agrega productos al carrito');return}
 const nombre=document.getElementById('delNombre').value.trim();
 const tel=document.getElementById('delTel').value.trim();
@@ -523,10 +655,9 @@ lsSet('del_dir',dir);
 lsSet('del_zona',zona);
 const total=delCart.reduce((s,it)=>s+it.price*it.qty,0);
 const itemsText=delCart.map(it=>`  ${it.qty}x ${it.name} — $${(it.price*it.qty).toFixed(2)}`).join('\n');
-const orden={id:Date.now(),nombre,telefono:tel,direccion:dir,zona,pago,hora,notas,items:delCart.map(it=>({name:it.name,qty:it.qty,price:it.price})),total,status:'Nuevo',createdAt:Date.now()};
-const deliveries=getDeliveryOrders();
-deliveries.unshift(orden);
-setDeliveryOrders(deliveries);
+const orden={nombre,telefono:tel,direccion:dir,zona,pago,hora,notas,items:delCart.map(it=>({name:it.name,qty:it.qty,price:it.price})),total,status:'Nuevo',created_at:new Date().toISOString()};
+await addDeliveryOrder_db(orden);
+await reloadTable('delivery_orders');
 const msg=encodeURIComponent(
 `\u{1F6F5} *PEDIDO DELIVERY — DIVINA SAZÓN*\n`+
 `━━━━━━━━━━━━━━━━━━━━━━\n\n`+
@@ -561,8 +692,7 @@ if(pendientes.length===0&&entregados.length===0){
 h+=`<div class="card"><p style="opacity:.5">No hay pedidos de delivery</p></div>`;
 }
 pendientes.forEach((o,_)=>{
-const idx=orders.indexOf(o);
-const mins=Math.floor((Date.now()-o.createdAt)/60000);
+const mins=Math.floor((Date.now()-(o.created_at?new Date(o.created_at).getTime():Date.now()))/60000);
 const elapsed=mins<1?'Recién':mins+'min';
 const elClass=mins<=10?'elapsed-green':mins<=25?'elapsed-amber':'elapsed-red';
 const sc=o.status.toLowerCase().replace(/\s/g,'');
@@ -573,18 +703,18 @@ h+=`<div style="background:var(--bg2);border-radius:10px;padding:10px;margin-bot
 if(o.notas){h+=`<div style="font-size:.82rem;opacity:.6;background:var(--red-subtle);padding:6px 10px;border-radius:8px;margin-bottom:10px;border-left:3px solid var(--gold)">\u{1F4DD} ${o.notas}</div>`}
 h+=`<div style="display:flex;gap:6px;flex-wrap:wrap">`;
 if(o.status==='Nuevo'){
-h+=`<button class="btn btn-sm btn-green" onclick="updateDelStatus(${idx},'Confirmado')">✅ Confirmar</button>`;
-h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${idx})">\u{1F4AC} WhatsApp</button>`;
+h+=`<button class="btn btn-sm btn-green" onclick="updateDelStatus(${o.id},'Confirmado')">✅ Confirmar</button>`;
+h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${o.id})">\u{1F4AC} WhatsApp</button>`;
 }
 if(o.status==='Confirmado'){
-h+=`<button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="updateDelStatus(${idx},'En camino')">\u{1F6F5} En camino</button>`;
-h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${idx})">\u{1F4AC} WhatsApp</button>`;
+h+=`<button class="btn btn-sm" style="border-color:#38BDF8;color:#38BDF8" onclick="updateDelStatus(${o.id},'En camino')">\u{1F6F5} En camino</button>`;
+h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${o.id})">\u{1F4AC} WhatsApp</button>`;
 }
 if(o.status==='En camino'){
-h+=`<button class="btn btn-sm btn-green" onclick="updateDelStatus(${idx},'Entregado')">\u{1F4E6} Entregado</button>`;
-h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${idx})">\u{1F4AC} WhatsApp</button>`;
+h+=`<button class="btn btn-sm btn-green" onclick="updateDelStatus(${o.id},'Entregado')">\u{1F4E6} Entregado</button>`;
+h+=`<button class="btn btn-sm" style="background:linear-gradient(145deg,#075E54,#25D366);color:#fff;border-color:#25D366" onclick="contactarClienteWA(${o.id})">\u{1F4AC} WhatsApp</button>`;
 }
-h+=`<button class="btn btn-sm btn-outline" onclick="deleteDelOrder(${idx})">Eliminar</button>`;
+h+=`<button class="btn btn-sm btn-outline" onclick="deleteDelOrder(${o.id})">Eliminar</button>`;
 h+=`</div></div>`;
 });
 if(entregados.length>0){
@@ -596,16 +726,15 @@ h+=`<div class="card" style="margin-bottom:8px;opacity:.55;padding:14px"><div st
 el.innerHTML=h;
 }
 
-function updateDelStatus(idx,status){
-const orders=getDeliveryOrders();
-if(!orders[idx])return;
-orders[idx].status=status;
-setDeliveryOrders(orders);
+async function updateDelStatus(id,status){
+await updateDeliveryStatus_db(id,status);
+const o=getDeliveryOrders().find(x=>x.id===id);
+if(o)o.status=status;
 renderCurrentTab();
 }
 
-function contactarClienteWA(idx){
-const o=getDeliveryOrders()[idx];
+function contactarClienteWA(id){
+const o=getDeliveryOrders().find(x=>x.id===id);
 if(!o)return;
 const tel=o.telefono.replace(/[^0-9]/g,'');
 const telWA=tel.startsWith('0')?'58'+tel.slice(1):tel;
@@ -620,11 +749,10 @@ const msg=encodeURIComponent(
 window.open(`https://wa.me/${telWA}?text=${msg}`,'_blank');
 }
 
-function deleteDelOrder(idx){
+async function deleteDelOrder(id){
 if(!confirm('¿Eliminar este pedido de delivery?'))return;
-const orders=getDeliveryOrders();
-orders.splice(idx,1);
-setDeliveryOrders(orders);
+await deleteDeliveryOrder_db(id);
+await reloadTable('delivery_orders');
 renderCurrentTab();
 }
 
