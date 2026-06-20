@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Divina Sazón - Sistema Gastronómico</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0A0A0A">
@@ -781,7 +784,9 @@ setInterval(()=>{if(['Pantalla Cocina','Mis Mesas','Pedidos Delivery'].includes(
 if('serviceWorker' in navigator){
 caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
 navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister())});
+navigator.serviceWorker.ready.then(reg=>{reg.unregister().then(()=>{console.log('SW removed')})}).catch(()=>{});
 }
+window.__APP_VERSION__='2026-06-20-v2';
 
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;const btn=document.createElement('button');btn.className='btn btn-gold';btn.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 24px;font-size:1rem;box-shadow:0 4px 20px rgba(245,197,24,.4)';btn.innerHTML='📲 Instalar Divina Sazón';btn.onclick=()=>{deferredInstallPrompt.prompt();deferredInstallPrompt.userChoice.then(()=>{btn.remove();deferredInstallPrompt=null})};document.body.appendChild(btn)});
